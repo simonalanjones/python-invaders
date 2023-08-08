@@ -14,6 +14,27 @@ class Shield(pygame.sprite.Sprite):
         # used in collision detection
         self.mask = pygame.mask.from_surface(self.image)
 
+    def missile_damage(self, missile_sprite):
+        shield_rect = self.rect
+        global_position = missile_sprite.rect.topleft
+        # Convert global position to local position inside the shield
+        local_position = (
+            global_position[0] - shield_rect.x,
+            global_position[1] - shield_rect.y,
+        )
+
+        modified_shield_surface = self.image.copy()
+        modified_shield_surface.blit(
+            missile_sprite.explode_frame,
+            # (local_position[0], 0 - y_adjust),
+            (local_position[0] - 4, local_position[1] - 2),
+            special_flags=pygame.BLEND_RGBA_SUB,
+        )
+        self.image = modified_shield_surface
+        # update the sprite mask so future collisions
+        # use the mask rather than a basic rect
+        self.mask = pygame.mask.from_surface(modified_shield_surface)
+
     def bomb_damage(self, bomb_sprite):
         shield_rect = self.rect
         global_position = bomb_sprite.rect.topleft

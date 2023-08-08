@@ -1,40 +1,58 @@
+import os
+from classes.Controller import Controller
 from classes.player.Player_missile import PlayerMissile
 import pygame
 
 
-class PlayerMissileController:
-    def __init__(self, get_invaders_callback, destroy_invader_callback):
+class PlayerMissileController(Controller):
+    def __init__(self):
+        super().__init__([])
         self.player_missile = None
-        self.get_invaders_callback = get_invaders_callback
-        self.destroy_invader_callback = destroy_invader_callback
+        self.ready_flag = False
 
-    def launch_missile(self, player_rect):
-        if self.player_missile == None:
-            self.player_missile = PlayerMissile(
-                player_rect, self.destroy_player_missile
-            )
+        # callbacks
+        self.get_invaders_callback = None
+        self.get_shields_callback = None
+        self.get_player_callback = None
+
+    def on_collision(self, data):
+        print(data)
+        # self.ready_flag = False
+        self.player_missile = None
+
+    def on_missile_ready(self, data):
+        self.ready_flag = True
+
+    def on_fire_pressed(self, data):
+        if self.player_missile == None and self.ready_flag:
+            self.player_missile = PlayerMissile(self.get_player_callback().rect)
 
     def check_collisions(self):
-        invaders = self.get_invaders_callback
-        collided_invaders = pygame.sprite.spritecollide(
-            self.player_missile, invaders(), False
-        )
-        if collided_invaders:
-            collided_invader = collided_invaders[0]
-            self.destroy_invader_callback(collided_invader)
-            self.player_missile = None
+        if self.get_invaders_callback:
+            collided_invaders = pygame.sprite.spritecollide(
+                self.player_missile, self.get_invaders_callback(), False
+            )
 
-    def update(self):
-        self.check_collisions()
-        if self.player_missile:
-            self.player_missile.rect.y -= 5  # Move the missile vertically upwards
-            if self.player_missile.rect.y <= 0:
+            if collided_invaders:
+                self.event_manager.notify("invader_hit", collided_invaders[0])
                 self.player_missile = None
-            return self.player_missile
+                self.ready_flag = False
+
+    def update(self, events):
+        if self.player_missile:
+            self.check_collisions()
+            if self.player_missile:
+                self.player_missile.rect.y -= 5  # Move the missile vertically upwards
+                if self.player_missile.rect.y <= 0:
+                    self.player_missile = None
+                    self.event_manager.notify("missile_exited")
+                return self.player_missile
 
     def destroy_player_missile(self):
         self.player_missile = None
+        self.ready_flag = True
 
+    # shields need access to player missile
     def get_player_missile(self):
         if self.player_missile != None:
             return self.player_missile

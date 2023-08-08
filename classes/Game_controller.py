@@ -1,7 +1,7 @@
 import pygame
-from pygame.locals import *
-from classes.invader.Invader_controller import InvaderController
 
+from classes.Controller import Controller
+from classes.invader.Invader_controller import InvaderController
 from classes.bomb.Bomb_controller import BombController
 from classes.player.Player import Player
 from classes.player.Player_controller import PlayerController
@@ -9,15 +9,16 @@ from classes.player.Player_missile_controller import PlayerMissileController
 from classes.shield.Shield_controller import ShieldController
 from classes.player.Player_missile import PlayerMissile
 from classes.Baseline_controller import BaselineController
+from classes.Input_controller import InputController
 
-clock = pygame.time.Clock()
 
-
-class GameController:
+class GameController(Controller):
     def __init__(self, config):
+        super().__init__(config)
         self.bombs_enabled = False
         self.play_delay_count = 120
         self.player_on_screen = False
+        # pygame.key.set_repeat(200, 50)
 
         self.player_missile = None
         self.invader_swarm_complete = False
@@ -29,42 +30,117 @@ class GameController:
 
         self.scaled_image = pygame.transform.scale(_bg_image, self.larger_screen_size)
         self.window_surface = pygame.display.set_mode(self.larger_screen_size)
-
-        self.invader_controller = InvaderController(config)
-        self.shield_controller = ShieldController(config)
-
-        self.player_missile_controller = PlayerMissileController(
-            self.invader_controller.get_invaders,
-            self.invader_controller.destroy_invader_callback,
-        )
-        self.player_controller = PlayerController(
-            Player(), self.player_missile_controller.launch_missile
-        )
-        # inject the function that returns the active invaders.
-        # the bomb container will need this function before dropping bombs
-        self.bomb_controller = BombController(config)
-        self.bomb_controller.invaders_ref(self.invader_controller.get_invaders)
-        self.bomb_controller.player_ref(self.player_controller.get_player)
-
-        self.shield_controller.bombs_ref(self.bomb_controller.get_bombs)
-        self.shield_controller.invaders_ref(self.invader_controller.get_invaders)
-
-        self.invader_controller.pause_player_missile(
-            self.player_controller.pause_missile_launch
-        )
-        self.invader_controller.resume_player_missile(
-            self.player_controller.resume_missile_launch
-        )
-        self.invader_controller.notify_swarm_complete(
-            self.callback_notify_swarm_complete
-        )
-
-        self.baseline_controller = BaselineController()
-        self.baseline_controller.bombs_ref(self.bomb_controller.get_bombs)
-
         self.max_fps = config.get("max_fps")
 
-    def callback_notify_swarm_complete(self):
+        self.setup_controllers(config)
+        self.setup_controller_callbacks()
+        self.setup_game_events()
+
+        # self.controllers["missile"].get_invaders_callback = self.controllers[
+        #     "invader"
+        # ].get_invaders
+        # self.controllers["missile"].destroy_invader_callback = self.controllers[
+        #     "invader"
+        # ].destroy_invader_callback
+
+        # self.controllers["invader"].pause_player_missile_callback = self.controllers[
+        #     "player"
+        # ].pause_missile_launch
+        # self.controllers["invader"].resume_player_missile_callback = self.controllers[
+        #     "player"
+        # ].resume_missile_launch
+        # self.controllers[
+        #     "invader"
+        # ].swarm_complete_callback = self.callback_notify_swarm_complete
+
+    def setup_controllers(self, config):
+        self.controllers = {
+            "invader": InvaderController(config),
+            "player": PlayerController(config),
+            "missile": PlayerMissileController(),
+            "shield": ShieldController(config),
+            "bomb": BombController(config),
+            "baseline": BaselineController(),
+            "input": InputController(config),
+        }
+
+    def setup_controller_callbacks(self):
+        self.controllers["baseline"].get_bombs_callback = self.controllers[
+            "bomb"
+        ].get_bombs
+
+        self.controllers["bomb"].get_invaders_callback = self.controllers[
+            "invader"
+        ].get_invaders
+
+        self.controllers["bomb"].get_player_callback = self.controllers[
+            "player"
+        ].get_player
+
+        self.controllers["shield"].get_bombs_callback = self.controllers[
+            "bomb"
+        ].get_bombs
+
+        self.controllers["shield"].get_missile_callback = self.controllers[
+            "missile"
+        ].get_player_missile
+
+        self.controllers["shield"].get_invaders_callback = self.controllers[
+            "invader"
+        ].get_invaders
+
+        self.controllers["missile"].get_player_callback = self.controllers[
+            "player"
+        ].get_player
+
+        self.controllers["missile"].get_invaders_callback = self.controllers[
+            "invader"
+        ].get_invaders
+
+    def setup_game_events(self):
+        self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
+
+        self.event_manager.add_listener(
+            "missile_collision", self.controllers["missile"].on_collision
+        )
+
+        self.event_manager.add_listener(
+            "invader_hit", self.controllers["invader"].on_invader_hit
+        )
+        self.event_manager.add_listener(
+            "invader_removed", self.controllers["missile"].on_missile_ready
+        )
+
+        self.event_manager.add_listener(
+            "play_delay_complete", self.controllers["player"].on_play_delay_complete
+        )
+
+        self.event_manager.add_listener(
+            "play_delay_complete", self.controllers["missile"].on_missile_ready
+        )
+
+        self.event_manager.add_listener(
+            "play_delay_complete", self.controllers["bomb"].on_play_delay_complete
+        )
+
+        self.event_manager.add_listener(
+            "left_button_pressed", self.controllers["player"].on_move_left
+        )
+        self.event_manager.add_listener(
+            "left_button_released", self.controllers["player"].on_move_left_exit
+        )
+        self.event_manager.add_listener(
+            "right_button_pressed", self.controllers["player"].on_move_right
+        )
+        self.event_manager.add_listener(
+            "right_button_released", self.controllers["player"].on_move_right_exit
+        )
+
+        self.event_manager.add_listener(
+            "fire_button_pressed", self.controllers["missile"].on_fire_pressed
+        )
+
+    def on_swarm_complete(self, data):
         self.invader_swarm_complete = True
 
     def launch_player_missile(self, player_rect):
@@ -73,37 +149,21 @@ class GameController:
     def player_missile_remove(self):
         self.player_missile = None
 
-    # def handle_player_controls(self):
-    #     keys = pygame.key.get_pressed()
-    #     if keys[K_LEFT]:
-    #         self.player_controller.move_left()
-    #     if keys[K_RIGHT]:
-    #         self.player_controller.move_right()
-
     def update(self, events):
+        clock = pygame.time.Clock()
+
         if self.play_delay_count > 0:
             self.play_delay_count -= 1
             if self.play_delay_count <= 0:
-                self.bomb_controller.enable_bombs()
-                self.player_on_screen = True
+                self.event_manager.notify("play_delay_complete")
 
         # create a new game surface each frame
         game_surface = pygame.Surface(self.original_screen_size, pygame.SRCALPHA)
 
-        if self.player_on_screen == True:
-            self.player_controller.update(events)
-            # self.handle_player_controls()
-            self.player_controller.get_player().draw(game_surface)
-
-            player_missile = self.player_missile_controller.get_player_missile()
-            if player_missile != None:
-                player_missile.draw(game_surface)
-                self.player_missile_controller.update()
-
-        self.invader_controller.update().draw(game_surface)
-        self.shield_controller.update().draw(game_surface)
-        self.bomb_controller.update().draw(game_surface)
-        self.baseline_controller.update().draw(game_surface)
+        for controller in self.controllers.values():
+            canvas_item = controller.update(events)
+            if hasattr(canvas_item, "draw"):
+                canvas_item.draw(game_surface)
 
         # render the playing surface onto the main window
         self.window_surface.blit(self.scaled_image, self.top_left)
@@ -113,5 +173,6 @@ class GameController:
             self.top_left,
         )
 
+        # pygame.display.flip()
         pygame.display.flip()
         clock.tick(self.max_fps)
