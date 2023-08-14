@@ -29,7 +29,7 @@ class BaselineController:
         bomb_collision.rect.height - 1
         # masked_canvas.blit(bomb_collision.image, (bomb_collision.rect.x, bottom_row_y), special_flags=pygame.BLEND_RGBA_MULT)
 
-    def update(self, events):
+    def update(self, events, dt):
         if self.get_bombs_callback:
             bomb_sprites = self.get_bombs_callback()
             if len(bomb_sprites) > 0:

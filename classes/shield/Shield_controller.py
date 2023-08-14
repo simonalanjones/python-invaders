@@ -21,7 +21,7 @@ class ShieldController(Controller):
         self.get_invaders_callback = lambda: None
         self.get_missile_callback = lambda: None
 
-    def update(self, events):
+    def update(self, events, dt):
         self.check_bomb_collisions()
         self.check_invader_collision()
         self.check_missile_collision()
@@ -29,11 +29,13 @@ class ShieldController(Controller):
 
     def check_missile_collision(self):
         missile = self.get_missile_callback()
-        if missile is not None:
+        if missile is not None and missile.active:
             for shield_sprite in self.shield_container:
                 if pygame.sprite.collide_mask(shield_sprite, missile):
+                    missile.explode()
                     shield_sprite.missile_damage(missile)
-                    self.event_manager.notify("missile_collision", shield_sprite)
+                    # self.event_manager.notify("missile_collision", shield_sprite)
+
                     # print("collided missile with shield")
 
     def check_invader_collision(self):

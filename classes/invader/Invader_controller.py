@@ -39,14 +39,11 @@ class InvaderController(Controller):
         pass
 
     def on_invader_hit(self, invader):
-        print("here", invader)
-        ## fire events here which will connect back to player missile
         self.stop_movement()
         # # pause invaders 1/4 second (60/15)
         self.countdown = 15
-        # # callback to pause player firing
-        # self.pause_player_missile_callback()
         invader.explode()
+        self.event_manager.notify("points_awarded", invader.points)
 
     def release_non_active(self):
         self.invader_container.remove_inactive()
@@ -54,7 +51,7 @@ class InvaderController(Controller):
         # self.resume_player_missile_callback()
         self.event_manager.notify("invader_removed")
 
-    def update(self, events):
+    def update(self, events, dt):
         if not self.swarm_complete:
             self.generate_next_invader()
         else:

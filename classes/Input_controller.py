@@ -11,7 +11,7 @@ class InputController(Controller):
     def __init__(self, config):
         super().__init__(config)
 
-    def update(self, events):
+    def update(self, events, dt):
         for event in events:
             if event.type == KEYDOWN:
                 if event.key == K_k:  # 'K' key pressed

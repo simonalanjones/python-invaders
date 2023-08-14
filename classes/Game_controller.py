@@ -1,3 +1,4 @@
+import os
 import pygame
 
 from classes.Controller import Controller
@@ -10,6 +11,8 @@ from classes.shield.Shield_controller import ShieldController
 from classes.player.Player_missile import PlayerMissile
 from classes.Baseline_controller import BaselineController
 from classes.Input_controller import InputController
+from classes.Scoreboard_controller import ScoreboardController
+from classes.UI_controller import UIController
 
 
 class GameController(Controller):
@@ -36,23 +39,6 @@ class GameController(Controller):
         self.setup_controller_callbacks()
         self.setup_game_events()
 
-        # self.controllers["missile"].get_invaders_callback = self.controllers[
-        #     "invader"
-        # ].get_invaders
-        # self.controllers["missile"].destroy_invader_callback = self.controllers[
-        #     "invader"
-        # ].destroy_invader_callback
-
-        # self.controllers["invader"].pause_player_missile_callback = self.controllers[
-        #     "player"
-        # ].pause_missile_launch
-        # self.controllers["invader"].resume_player_missile_callback = self.controllers[
-        #     "player"
-        # ].resume_missile_launch
-        # self.controllers[
-        #     "invader"
-        # ].swarm_complete_callback = self.callback_notify_swarm_complete
-
     def setup_controllers(self, config):
         self.controllers = {
             "invader": InvaderController(config),
@@ -62,6 +48,8 @@ class GameController(Controller):
             "bomb": BombController(config),
             "baseline": BaselineController(),
             "input": InputController(config),
+            "score": ScoreboardController(config),
+            "ui": UIController(config),
         }
 
     def setup_controller_callbacks(self):
@@ -97,11 +85,13 @@ class GameController(Controller):
             "invader"
         ].get_invaders
 
+        self.controllers["ui"].get_score_callback = self.controllers["score"].get_score
+
     def setup_game_events(self):
         self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
 
         self.event_manager.add_listener(
-            "missile_collision", self.controllers["missile"].on_collision
+            "points_awarded", self.controllers["score"].on_points_awarded
         )
 
         self.event_manager.add_listener(
@@ -149,7 +139,7 @@ class GameController(Controller):
     def player_missile_remove(self):
         self.player_missile = None
 
-    def update(self, events):
+    def update(self, events, dt):
         clock = pygame.time.Clock()
 
         if self.play_delay_count > 0:
@@ -161,7 +151,9 @@ class GameController(Controller):
         game_surface = pygame.Surface(self.original_screen_size, pygame.SRCALPHA)
 
         for controller in self.controllers.values():
-            canvas_item = controller.update(events)
+            if hasattr(controller, "update"):
+                canvas_item = controller.update(events, dt)
+                # print(canvas_item)
             if hasattr(canvas_item, "draw"):
                 canvas_item.draw(game_surface)
 
@@ -173,6 +165,5 @@ class GameController(Controller):
             self.top_left,
         )
 
-        # pygame.display.flip()
         pygame.display.flip()
         clock.tick(self.max_fps)

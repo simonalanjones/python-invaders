@@ -3,15 +3,8 @@ from classes.invader.Invader_factory import InvaderFactory
 
 
 class InvaderContainer(pygame.sprite.Group):
-    # def __init__(self, invaders, config):
     def __init__(self, config):
         super().__init__()
-
-        # invader_factory = InvaderFactory(config)
-        # self.invader_generator = invader_factory.create_invader_swarm()
-
-        # add the sprite group from the factory
-        # self.add(invaders)
         # copy the config values
         self.invader_direction = config.get("invaders")["horizontal_move"]
         self.invader_down_direction = config.get("invaders")["vertical_move"]

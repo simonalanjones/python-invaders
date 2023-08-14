@@ -61,7 +61,17 @@ class InvaderFactory:
                 index += 1
 
     def create_invader(self, x, y, active, column, row, index):
+        points_array = self.config.get("invaders")["points"]
+        points_for_row = points_array[row]
+        # points = self.config.get("invaders")[row]
         invader_sprite = Invader(
-            x, y, active, column, row, self.invader_build_array[row], index
+            x,
+            y,
+            active,
+            column,
+            row,
+            self.invader_build_array[row],
+            index,
+            points_for_row,
         )
         return invader_sprite

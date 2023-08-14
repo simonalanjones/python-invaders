@@ -1,8 +1,5 @@
 from classes.Controller import Controller
 from classes.player.Player import Player
-from classes.player.Player_missile import PlayerMissile
-import pygame
-from pygame.locals import *
 
 player_speed = 1
 
@@ -32,12 +29,12 @@ class PlayerController(Controller):
     def on_move_right(self, data):
         self.right_key_pressed = True
 
-    def update(self, events):
+    def update(self, events, dt):
         if self.enabled:
             if self.left_key_pressed:
-                self.player.rect.x -= player_speed
+                self.player.rect.x -= player_speed * dt
             elif self.right_key_pressed:
-                self.player.rect.x += player_speed
+                self.player.rect.x += player_speed * dt
             return self.player
 
     def clamp(value, min_value, max_value):

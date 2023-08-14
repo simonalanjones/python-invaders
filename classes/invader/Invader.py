@@ -2,7 +2,7 @@ import pygame.sprite
 
 
 class Invader(pygame.sprite.Sprite):
-    def __init__(self, x, y, active, column, row, image_frames, index):
+    def __init__(self, x, y, active, column, row, image_frames, index, points):
         super().__init__()
 
         self.index = index
@@ -11,6 +11,7 @@ class Invader(pygame.sprite.Sprite):
         self.frame_pointer = 0
         self.image_frames = image_frames
         self.active = active
+        self.points = points
 
         self.empty_frame = pygame.image.load(
             "sprites/invader/invader-empty-frame.png"

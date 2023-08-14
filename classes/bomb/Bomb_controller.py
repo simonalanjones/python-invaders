@@ -39,7 +39,7 @@ class BombController(Controller):
         # print("swarm notify in bomb controller")
         self.enabled = True
 
-    def update(self, events):
+    def update(self, events, dt):
         if self.get_invaders_callback:
             if len(self.get_invaders_callback()) > 0 and self.enabled == True:
                 # create a new bomb
