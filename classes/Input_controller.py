@@ -14,6 +14,9 @@ class InputController(Controller):
     def update(self, events, dt):
         for event in events:
             if event.type == KEYDOWN:
+                if event.key == K_F1:  # 'K' key pressed
+                    self.event_manager.notify("f1_button_pressed")
+
                 if event.key == K_k:  # 'K' key pressed
                     self.event_manager.notify("left_button_pressed")
                 elif event.key == K_l:  # 'L' key pressed

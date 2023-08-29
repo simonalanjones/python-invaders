@@ -10,7 +10,14 @@ class Config:
         "bg_image_path": os.path.join("images", "invaders_moon_bg.png"),
         "max_fps": 60,
         "top_left": (0, 0),
-        # "font_path": os.path.join(base_directory, "space_invaders.ttf"),
+        "ui": {
+            "score_label_text": "SCORE",
+            "score_label_position": (60, 13),
+            "score_value_position": (60, 27),
+            "hiscore_label_text": "HI-SCORE",
+            "hiscore_label_position": (118, 13),
+            "hiscore_value_position": (118, 27),
+        },
         "shields": {
             "positions": [(29, 191), (75, 191), (127, 191), (173, 191)],
             "image": os.path.join("sprites", "player", "player-shield.png"),
@@ -69,6 +76,32 @@ class Config:
             },
             "max_bombs": 1,
             "grace_period": 60,
+        },
+        "mothership": {
+            "image_frame": os.path.join("sprites", "mothership", "mothership.png"),
+            "explode_frame": os.path.join(
+                "sprites", "mothership", "mothership-exploding.png"
+            ),
+            "spawn_left_position": [0, 35],
+            "spawn_right_position": [224, 35],
+            "scores": [
+                50,
+                50,
+                50,
+                50,
+                50,
+                100,
+                100,
+                100,
+                100,
+                100,
+                100,
+                100,
+                100,
+                150,
+                150,
+                300,
+            ],
         },
         "font_spritesheet_offsets": {
             "A": [1, 1],

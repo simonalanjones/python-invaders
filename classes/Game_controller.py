@@ -1,4 +1,3 @@
-import os
 import pygame
 
 from classes.Controller import Controller
@@ -21,7 +20,6 @@ class GameController(Controller):
         self.bombs_enabled = False
         self.play_delay_count = 120
         self.player_on_screen = False
-        # pygame.key.set_repeat(200, 50)
 
         self.player_missile = None
         self.invader_swarm_complete = False
@@ -43,8 +41,8 @@ class GameController(Controller):
         self.controllers = {
             "invader": InvaderController(config),
             "player": PlayerController(config),
-            "missile": PlayerMissileController(),
             "shield": ShieldController(config),
+            "missile": PlayerMissileController(),
             "bomb": BombController(config),
             "baseline": BaselineController(),
             "input": InputController(config),
@@ -128,6 +126,10 @@ class GameController(Controller):
 
         self.event_manager.add_listener(
             "fire_button_pressed", self.controllers["missile"].on_fire_pressed
+        )
+
+        self.event_manager.add_listener(
+            "f1_button_pressed", self.controllers["invader"].on_f1_pressed
         )
 
     def on_swarm_complete(self, data):

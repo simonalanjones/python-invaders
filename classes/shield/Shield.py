@@ -16,7 +16,16 @@ class Shield(pygame.sprite.Sprite):
 
     def missile_damage(self, missile_sprite):
         shield_rect = self.rect
+
         global_position = missile_sprite.rect.topleft
+        # print(global_position)
+        new_y = global_position[1] - 0
+        new_x = global_position[0] - 0
+
+        # Create a new tuple with the modified y-position
+        global_position = (new_x, new_y)
+
+        # print(global_position)
         # Convert global position to local position inside the shield
         local_position = (
             global_position[0] - shield_rect.x,
@@ -27,7 +36,7 @@ class Shield(pygame.sprite.Sprite):
         modified_shield_surface.blit(
             missile_sprite.explode_frame,
             # (local_position[0], 0 - y_adjust),
-            (local_position[0] - 4, local_position[1] - 2),
+            (local_position[0], local_position[1]),
             special_flags=pygame.BLEND_RGBA_SUB,
         )
         self.image = modified_shield_surface

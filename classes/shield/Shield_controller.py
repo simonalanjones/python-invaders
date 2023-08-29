@@ -10,10 +10,13 @@ class ShieldController(Controller):
         self.explode_bomb_image = pygame.image.load(
             "sprites/invader_bomb/bomb_exploding.png"
         )
-
-        self.bomb_stem_image = pygame.image.load(
-            "sprites/invader_bomb/explode-stem.png"
+        self.missile_image_2x = pygame.image.load(
+            "sprites/player/player-shot-double-height.png"
         )
+
+        # self.bomb_stem_image = pygame.image.load(
+        #     "sprites/invader_bomb/explode-stem.png"
+        # )
 
         # callbacks defined in Game_controller
         # if not injected they are still callable
@@ -29,14 +32,18 @@ class ShieldController(Controller):
 
     def check_missile_collision(self):
         missile = self.get_missile_callback()
+
         if missile is not None and missile.active:
+            _missile = pygame.sprite.Sprite()  # Create an instance of the Sprite class
+            _missile.rect = missile.rect.copy()  # Copy the rectangle
+            _missile.image = self.missile_image_2x  # Copy the image
+            # _missile.rect.y -= 1  # Adjust the copied missile's position
+
             for shield_sprite in self.shield_container:
-                if pygame.sprite.collide_mask(shield_sprite, missile):
+                if pygame.sprite.collide_mask(shield_sprite, _missile):
                     missile.explode()
                     shield_sprite.missile_damage(missile)
                     # self.event_manager.notify("missile_collision", shield_sprite)
-
-                    # print("collided missile with shield")
 
     def check_invader_collision(self):
         invaders = self.get_invaders_callback()

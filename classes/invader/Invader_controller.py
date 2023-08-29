@@ -38,6 +38,13 @@ class InvaderController(Controller):
     def check_has_landed():
         pass
 
+    def on_f1_pressed(self, stuff):
+        invaders = self.get_invaders()
+        print("start of y")
+        for invader in invaders:
+            invader.print_y()
+        print("end of y")
+
     def on_invader_hit(self, invader):
         self.stop_movement()
         # # pause invaders 1/4 second (60/15)
@@ -48,7 +55,6 @@ class InvaderController(Controller):
     def release_non_active(self):
         self.invader_container.remove_inactive()
         self.start_movement()
-        # self.resume_player_missile_callback()
         self.event_manager.notify("invader_removed")
 
     def update(self, events, dt):

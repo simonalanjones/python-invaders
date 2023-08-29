@@ -1,5 +1,5 @@
 import pygame
-from classes.invader.Invader import Invader
+from classes.invader.Invader import Invader  # , ModifiedInvader
 
 
 class InvaderFactory:
