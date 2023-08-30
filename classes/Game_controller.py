@@ -12,6 +12,7 @@ from classes.Baseline_controller import BaselineController
 from classes.Input_controller import InputController
 from classes.Scoreboard_controller import ScoreboardController
 from classes.UI_controller import UIController
+from classes.mothership.Mothership_controller import MothershipController
 
 
 class GameController(Controller):
@@ -40,6 +41,7 @@ class GameController(Controller):
     def setup_controllers(self, config):
         self.controllers = {
             "invader": InvaderController(config),
+            "mothership": MothershipController(config),
             "player": PlayerController(config),
             "shield": ShieldController(config),
             "missile": PlayerMissileController(),
@@ -85,6 +87,10 @@ class GameController(Controller):
 
         self.controllers["ui"].get_score_callback = self.controllers["score"].get_score
 
+        self.controllers["mothership"].get_invaders_callback = self.controllers[
+            "invader"
+        ].get_invaders
+
     def setup_game_events(self):
         self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
 
@@ -126,6 +132,10 @@ class GameController(Controller):
 
         self.event_manager.add_listener(
             "fire_button_pressed", self.controllers["missile"].on_fire_pressed
+        )
+
+        self.event_manager.add_listener(
+            "fire_button_pressed", self.controllers["mothership"].on_update_shot_counter
         )
 
         self.event_manager.add_listener(

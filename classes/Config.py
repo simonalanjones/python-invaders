@@ -82,9 +82,11 @@ class Config:
             "explode_frame": os.path.join(
                 "sprites", "mothership", "mothership-exploding.png"
             ),
-            "spawn_left_position": [0, 35],
-            "spawn_right_position": [224, 35],
-            "scores": [
+            "cycles_until_spawn": 600,
+            "qualifying_invader_y_position": 144,
+            "spawn_left_position": (0, 35),
+            "spawn_right_position": (224, 35),
+            "points_table": [
                 50,
                 50,
                 50,
