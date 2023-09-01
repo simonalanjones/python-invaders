@@ -82,8 +82,8 @@ class Config:
             "explode_frame": os.path.join(
                 "sprites", "mothership", "mothership-exploding.png"
             ),
-            "cycles_until_spawn": 600,
-            "qualifying_invader_y_position": 144,
+            "cycles_until_spawn": 200,
+            "qualifying_invader_y_position": 36,
             "spawn_left_position": (0, 35),
             "spawn_right_position": (224, 35),
             "points_table": [
@@ -147,6 +147,10 @@ class Config:
             "*": [71, 41],
             "?": [1, 51],
             "-": [11, 51],
+        },
+        "audio": {
+            "mothership": "sounds/mothership.wav",
+            "mothership_bonus": "sounds/mothership_bonus.wav",
         },
     }
 

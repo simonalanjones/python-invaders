@@ -26,6 +26,12 @@ class InvaderController(Controller):
                 self.is_moving = True
                 self.event_manager.notify("swarm_complete")
 
+    def get_lowest_invader_y(self):
+        return self.invader_container.get_invaders()[0].rect.y
+
+    def get_invader_count(self):
+        return len(self.invader_container.get_invaders())
+
     def get_invaders(self):
         return self.invader_container.get_invaders()
 

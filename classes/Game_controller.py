@@ -13,6 +13,7 @@ from classes.Input_controller import InputController
 from classes.Scoreboard_controller import ScoreboardController
 from classes.UI_controller import UIController
 from classes.mothership.Mothership_controller import MothershipController
+from classes.Audio_controller import AudioController
 
 
 class GameController(Controller):
@@ -50,6 +51,7 @@ class GameController(Controller):
             "input": InputController(config),
             "score": ScoreboardController(config),
             "ui": UIController(config),
+            "audio": AudioController(config),
         }
 
     def setup_controller_callbacks(self):
@@ -87,12 +89,36 @@ class GameController(Controller):
 
         self.controllers["ui"].get_score_callback = self.controllers["score"].get_score
 
-        self.controllers["mothership"].get_invaders_callback = self.controllers[
+        self.controllers["mothership"].get_score_text_callback = self.controllers[
+            "ui"
+        ].create_text_surface
+
+        self.controllers["mothership"].get_invader_count_callback = self.controllers[
             "invader"
-        ].get_invaders
+        ].get_invader_count
+
+        self.controllers["mothership"].get_lowest_invader_y_callback = self.controllers[
+            "invader"
+        ].get_lowest_invader_y
+
+        self.controllers["mothership"].get_missile_callback = self.controllers[
+            "missile"
+        ].get_player_missile
 
     def setup_game_events(self):
         self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
+
+        self.event_manager.add_listener(
+            "mothership_spawned", self.controllers["audio"].on_mothership_spawned
+        )
+
+        self.event_manager.add_listener(
+            "mothership_hit", self.controllers["audio"].on_mothership_bonus
+        )
+
+        self.event_manager.add_listener(
+            "mothership_exit", self.controllers["audio"].on_mothership_exit
+        )
 
         self.event_manager.add_listener(
             "points_awarded", self.controllers["score"].on_points_awarded
