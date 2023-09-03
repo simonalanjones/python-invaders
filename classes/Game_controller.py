@@ -1,4 +1,5 @@
 import pygame
+import sys
 
 from classes.Controller import Controller
 from classes.invader.Invader_controller import InvaderController
@@ -32,6 +33,7 @@ class GameController(Controller):
         _bg_image = pygame.image.load(config.get_file_path(config.get("bg_image_path")))
 
         self.scaled_image = pygame.transform.scale(_bg_image, self.larger_screen_size)
+        # add , pygame.FULLSCREEN to run without border
         self.window_surface = pygame.display.set_mode(self.larger_screen_size)
         self.max_fps = config.get("max_fps")
 
@@ -83,6 +85,10 @@ class GameController(Controller):
             "player"
         ].get_player
 
+        self.controllers["missile"].mothership_is_exploding = self.controllers[
+            "mothership"
+        ].mothership_is_exploding
+
         self.controllers["missile"].get_invaders_callback = self.controllers[
             "invader"
         ].get_invaders
@@ -114,6 +120,10 @@ class GameController(Controller):
 
         self.event_manager.add_listener(
             "mothership_hit", self.controllers["audio"].on_mothership_bonus
+        )
+
+        self.event_manager.add_listener(
+            "mothership_hit", self.controllers["score"].on_points_awarded
         )
 
         self.event_manager.add_listener(
@@ -165,8 +175,12 @@ class GameController(Controller):
         )
 
         self.event_manager.add_listener(
-            "f1_button_pressed", self.controllers["invader"].on_f1_pressed
+            "escape_button_pressed", self.on_escape_button_pressed
         )
+
+    def on_escape_button_pressed(self):
+        pygame.quit()
+        sys.exit()
 
     def on_swarm_complete(self, data):
         self.invader_swarm_complete = True

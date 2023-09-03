@@ -12,11 +12,11 @@ class Config:
         "top_left": (0, 0),
         "ui": {
             "score_label_text": "SCORE",
-            "score_label_position": (60, 13),
-            "score_value_position": (60, 27),
+            "score_label_position": (60, 16),
+            "score_value_position": (60, 32),
             "hiscore_label_text": "HI-SCORE",
-            "hiscore_label_position": (118, 13),
-            "hiscore_value_position": (118, 27),
+            "hiscore_label_position": (118, 16),
+            "hiscore_value_position": (118, 32),
         },
         "shields": {
             "positions": [(29, 191), (75, 191), (127, 191), (173, 191)],
@@ -82,10 +82,12 @@ class Config:
             "explode_frame": os.path.join(
                 "sprites", "mothership", "mothership-exploding.png"
             ),
+            # "cycles_with_explosion_frame": 60,
+            # "cycles_with_bonus_text": 60,
             "cycles_until_spawn": 200,
             "qualifying_invader_y_position": 36,
-            "spawn_left_position": (0, 35),
-            "spawn_right_position": (224, 35),
+            "spawn_left_position": (0, 48),
+            "spawn_right_position": (224, 48),
             "points_table": [
                 50,
                 50,

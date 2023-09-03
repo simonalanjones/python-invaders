@@ -20,6 +20,8 @@ class UIController(Controller):
         surface.blit(self.canvas, (0, 0))  # blit the canvas onto the game surface
 
     def update(self, events, dt):
+        # clear the canvas between each draw
+        self.canvas.fill((0, 0, 0, 0))
         # get the score value using the callback to the scoreboard controller
         score = str(self.get_score_callback())
 
@@ -49,6 +51,7 @@ class UIController(Controller):
         surface_width = len(text) * 8
         surface_height = 8
         text_surface = pygame.Surface((surface_width, surface_height), pygame.SRCALPHA)
+        text_surface.fill((0, 0, 0, 0))
 
         for idx, letter in enumerate(text):
             if letter in self.font_config:

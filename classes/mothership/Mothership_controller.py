@@ -22,6 +22,12 @@ class MothershipController(Controller):
         # mothership sprite stored in sprite group
         self.mothership_group = pygame.sprite.Group()
 
+    def mothership_is_exploding(self):
+        if not self.mothership_group.sprites():
+            return False
+        if self.mothership_group.sprites()[0].active == False:
+            return True
+
     def update(self, events, dt):
         if not self.spawned:
             self.update_spawn_logic()
@@ -34,7 +40,6 @@ class MothershipController(Controller):
             mothership = self.mothership_group.sprites()[0]
             return mothership.update(self.shot_counter, dt)
 
-        print("here")
         # If there are no motherships in the group, reset the spawn state.
         self.reset_spawn_state()
         self.event_manager.notify("mothership_exit")
@@ -54,10 +59,10 @@ class MothershipController(Controller):
             collided = pygame.sprite.spritecollide(missile, mothership, False)
             if collided:
                 self.mothership_hit()
+                missile.remove()
 
     def mothership_hit(self):
         mothership = self.mothership_group.sprites()[0]
-
         points = mothership.calculate_points()
         score_text_surface = self.get_score_text_callback(str(points))
         mothership.explode(score_text_surface)

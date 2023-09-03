@@ -36,12 +36,18 @@ class ShieldController(Controller):
         if missile is not None and missile.active:
             _missile = pygame.sprite.Sprite()  # Create an instance of the Sprite class
             _missile.rect = missile.rect.copy()  # Copy the rectangle
+            # because the missile moves up 4 pixels each cycle
+            # we need a sprite 2x height to ensure that sprite collision
+            # doesn't miss any pixels between position jumps
             _missile.image = self.missile_image_2x  # Copy the image
             # _missile.rect.y -= 1  # Adjust the copied missile's position
 
             for shield_sprite in self.shield_container:
                 if pygame.sprite.collide_mask(shield_sprite, _missile):
-                    missile.explode()
+                    missile.explode(missile.rect.move(-4, -3))
+                    # self.rect.x -= 4
+                    # self.rect.y -= 3
+
                     shield_sprite.missile_damage(missile)
                     # self.event_manager.notify("missile_collision", shield_sprite)
 

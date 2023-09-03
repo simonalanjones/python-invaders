@@ -14,12 +14,17 @@ class PlayerMissileController(Controller):
         self.get_invaders_callback = lambda: None
         self.get_shields_callback = lambda: None
         self.get_player_callback = lambda: None
+        self.mothership_is_exploding = lambda: None
 
     def on_missile_ready(self, data):
         self.ready_flag = True
 
     def on_fire_pressed(self, data):
-        if not self.missile_group and self.ready_flag:
+        if (
+            not self.missile_group
+            and self.ready_flag
+            and not self.mothership_is_exploding()
+        ):
             self.missile_group.add(PlayerMissile(self.get_player_callback().rect))
 
     def check_collisions(self):

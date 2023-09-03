@@ -61,7 +61,3 @@ class Invader(pygame.sprite.Sprite):
     def get_sprite_image(self):
         self.frame_pointer = 1 - self.frame_pointer
         return self.modified_frames[self.frame_pointer]  # Use the modified copy
-
-    def update(self):
-        # ... (custom update behavior)
-        pass
