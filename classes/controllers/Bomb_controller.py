@@ -1,4 +1,4 @@
-from classes.Controller import Controller
+from lib.Controller import Controller
 from classes.bomb.Bomb_factory import BombFactory
 from classes.bomb.Bomb_container import BombContainer
 from classes.invader.Invader import Invader
@@ -8,6 +8,7 @@ import random, pygame, os
 
 class BombController(Controller):
     def __init__(self, config):
+        super().__init__(config)
         self.counter = 0
         self.enabled = False
         self.max_bombs = 1
@@ -19,18 +20,14 @@ class BombController(Controller):
         self.explode_bomb_image = pygame.image.load(
             os.path.join("sprites", "invader_bomb", "bomb_exploding.png")
         )
+        self.event_manager.add_listener(
+            "play_delay_complete", self.on_play_delay_complete
+        )
 
-        # callbacks defined in Game_controller
-        self.get_invaders_callback = None
-        self.get_player_callback = None
+        self.register_callback("get_bombs", self.get_bombs)
 
-    # callback from game controller
-    def enable_bombs(self):
-        self.enabled = True
-
-    # callback from game controller
-    def disable_bombs(self):
-        self.enabled = False
+        # self.get_invaders_callback = self.get_callback("get_invaders")
+        # self.get_player_callback = self.get_callback("get_player")
 
     def get_bombs(self):
         return self.bomb_container.get_bombs()
@@ -40,13 +37,14 @@ class BombController(Controller):
         self.enabled = True
 
     def update(self, events, dt):
-        if self.get_invaders_callback:
-            if len(self.get_invaders_callback()) > 0 and self.enabled == True:
-                # create a new bomb
-                if len(self.bomb_container.get_bombs()) < self.max_bombs:
-                    bomb = self.create_bomb()
-                    if isinstance(bomb, Bomb):
-                        self.bomb_container.add(bomb)
+        invader_callback = self.get_callback("get_invaders")
+        invaders = invader_callback()
+        if len(invaders) > 0 and self.enabled == True:
+            # create a new bomb
+            if len(self.bomb_container.get_bombs()) < self.max_bombs:
+                bomb = self.create_bomb()
+                if isinstance(bomb, Bomb):
+                    self.bomb_container.add(bomb)
 
         # Update all existing bomb sprites in this container
         self.counter += 1
@@ -86,7 +84,9 @@ class BombController(Controller):
 
     def find_invaders_with_clear_path(self):
         invaders_with_clear_path = []
-        invader_group = self.get_invaders_callback()
+        invader_callback = self.get_callback("get_invaders")
+        invader_group = invader_callback()
+
         # find the lowest screen row (initially row 4) of remaining invaders
         # invaders on this row number won't need a path check
         max_row = max(invader_group, key=lambda invader: invader.row).row
@@ -97,9 +97,6 @@ class BombController(Controller):
             # if the invader is on the lowest screen row (highest row number) then don't check any further
             if invader.row == max_row:
                 invaders_with_clear_path.append(invader)
-                # invader.image = pygame.image.load(
-                #     "sprites/invader/invader-explode.png"
-                # ).convert_alpha()
                 continue
 
             # else begin inner loop:
@@ -113,8 +110,5 @@ class BombController(Controller):
 
             if clear_path:
                 invaders_with_clear_path.append(invader)
-                # invader.image = pygame.image.load(
-                #     "sprites/invader/invader-explode.png"
-                # ).convert_alpha()
 
         return invaders_with_clear_path

@@ -67,7 +67,5 @@ class Mothership(pygame.sprite.Sprite):
                     and pixel_color[1] == 255
                     and pixel_color[2] == 255
                 ):
-                    #    print("all white")
-                    # print(pixel_color)
                     pixel_color.r, pixel_color.g, pixel_color.b = red
                     self.image.set_at((x, y), pixel_color)

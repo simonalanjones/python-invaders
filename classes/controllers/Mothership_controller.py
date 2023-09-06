@@ -1,5 +1,5 @@
 import pygame
-from classes.Controller import Controller
+from lib.Controller import Controller
 from classes.mothership.Mothership import Mothership
 
 
@@ -13,11 +13,11 @@ class MothershipController(Controller):
         self.spawned = False
         self.shot_counter = 0
 
-        # callbacks injected by game_controller
-        self.get_invader_count_callback = lambda: None
-        self.get_lowest_invader_y_callback = lambda: None
-        self.get_missile_callback = lambda: None
-        self.get_score_text_callback = lambda: None
+        self.register_callback("mothership_is_exploding", self.mothership_is_exploding)
+
+        self.event_manager.add_listener(
+            "fire_button_pressed", self.on_update_shot_counter
+        )
 
         # mothership sprite stored in sprite group
         self.mothership_group = pygame.sprite.Group()
@@ -45,15 +45,16 @@ class MothershipController(Controller):
         self.event_manager.notify("mothership_exit")
 
     def update_spawn_logic(self):
-        # if not self.check_invader_criteria():
-        #     return False
+        if not self.check_invader_criteria():
+            return False
 
         self.cycles_lapsed += 1
         if self.cycles_lapsed == self.mothership_config["cycles_until_spawn"]:
             self.spawn()
 
     def check_missile_collision(self):
-        missile = self.get_missile_callback()
+        missile_callback = self.get_callback("get_player_missile")
+        missile = missile_callback()
         mothership = self.mothership_group.sprites()
         if missile is not None and missile.active:
             collided = pygame.sprite.spritecollide(missile, mothership, False)
@@ -64,8 +65,11 @@ class MothershipController(Controller):
     def mothership_hit(self):
         mothership = self.mothership_group.sprites()[0]
         points = mothership.calculate_points()
-        score_text_surface = self.get_score_text_callback(str(points))
-        mothership.explode(score_text_surface)
+
+        text_surface_callback = self.get_callback("get_score_text")
+        points_surface = text_surface_callback(str(points))
+
+        mothership.explode(points_surface)
         self.event_manager.notify("mothership_hit", points)
 
     def reset_spawn_state(self):
@@ -77,8 +81,13 @@ class MothershipController(Controller):
         self.shot_counter = (self.shot_counter + 1) % 16
 
     def check_invader_criteria(self):
-        invader_count = self.get_invader_count_callback()
-        lowest_invader_y = self.get_lowest_invader_y_callback()
+        invader_count_callback = self.get_callback("get_invader_count")
+        invader_count = (
+            invader_count_callback()
+        )  # also possible: invader_count =  self.get_callback("get_invader_count")()
+
+        lowest_invader_y_callback = self.get_callback("get_lowest_invader_y")
+        lowest_invader_y = lowest_invader_y_callback()
 
         return (
             invader_count >= 8
@@ -99,7 +108,7 @@ class MothershipController(Controller):
     def spawn(self):
         self.event_manager.notify("mothership_spawned")
         self.spawned = True
-        print("Spawning mothership")
+        # print("Spawning mothership")
         self.mothership_group.add(
             Mothership(
                 self.get_spawn_position(),

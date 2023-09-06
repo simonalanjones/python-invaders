@@ -1,20 +1,10 @@
+import importlib
+import inspect
+import os
 import pygame
 import sys
 
-from classes.Controller import Controller
-from classes.invader.Invader_controller import InvaderController
-from classes.bomb.Bomb_controller import BombController
-from classes.player.Player import Player
-from classes.player.Player_controller import PlayerController
-from classes.player.Player_missile_controller import PlayerMissileController
-from classes.shield.Shield_controller import ShieldController
-from classes.player.Player_missile import PlayerMissile
-from classes.Baseline_controller import BaselineController
-from classes.Input_controller import InputController
-from classes.Scoreboard_controller import ScoreboardController
-from classes.UI_controller import UIController
-from classes.mothership.Mothership_controller import MothershipController
-from classes.Audio_controller import AudioController
+from lib.Controller import Controller
 
 
 class GameController(Controller):
@@ -25,7 +15,7 @@ class GameController(Controller):
         self.player_on_screen = False
 
         self.player_missile = None
-        self.invader_swarm_complete = False
+        # self.invader_swarm_complete = False
         self.top_left = config.get("top_left")
         self.original_screen_size = config.get("original_screen_size")
         self.larger_screen_size = config.get("larger_screen_size")
@@ -37,146 +27,57 @@ class GameController(Controller):
         self.window_surface = pygame.display.set_mode(self.larger_screen_size)
         self.max_fps = config.get("max_fps")
 
-        self.setup_controllers(config)
-        self.setup_controller_callbacks()
-        self.setup_game_events()
-
-    def setup_controllers(self, config):
-        self.controllers = {
-            "invader": InvaderController(config),
-            "mothership": MothershipController(config),
-            "player": PlayerController(config),
-            "shield": ShieldController(config),
-            "missile": PlayerMissileController(),
-            "bomb": BombController(config),
-            "baseline": BaselineController(),
-            "input": InputController(config),
-            "score": ScoreboardController(config),
-            "ui": UIController(config),
-            "audio": AudioController(config),
-        }
-
-    def setup_controller_callbacks(self):
-        self.controllers["baseline"].get_bombs_callback = self.controllers[
-            "bomb"
-        ].get_bombs
-
-        self.controllers["bomb"].get_invaders_callback = self.controllers[
-            "invader"
-        ].get_invaders
-
-        self.controllers["bomb"].get_player_callback = self.controllers[
-            "player"
-        ].get_player
-
-        self.controllers["shield"].get_bombs_callback = self.controllers[
-            "bomb"
-        ].get_bombs
-
-        self.controllers["shield"].get_missile_callback = self.controllers[
-            "missile"
-        ].get_player_missile
-
-        self.controllers["shield"].get_invaders_callback = self.controllers[
-            "invader"
-        ].get_invaders
-
-        self.controllers["missile"].get_player_callback = self.controllers[
-            "player"
-        ].get_player
-
-        self.controllers["missile"].mothership_is_exploding = self.controllers[
-            "mothership"
-        ].mothership_is_exploding
-
-        self.controllers["missile"].get_invaders_callback = self.controllers[
-            "invader"
-        ].get_invaders
-
-        self.controllers["ui"].get_score_callback = self.controllers["score"].get_score
-
-        self.controllers["mothership"].get_score_text_callback = self.controllers[
-            "ui"
-        ].create_text_surface
-
-        self.controllers["mothership"].get_invader_count_callback = self.controllers[
-            "invader"
-        ].get_invader_count
-
-        self.controllers["mothership"].get_lowest_invader_y_callback = self.controllers[
-            "invader"
-        ].get_lowest_invader_y
-
-        self.controllers["mothership"].get_missile_callback = self.controllers[
-            "missile"
-        ].get_player_missile
-
-    def setup_game_events(self):
-        self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
-
-        self.event_manager.add_listener(
-            "mothership_spawned", self.controllers["audio"].on_mothership_spawned
-        )
-
-        self.event_manager.add_listener(
-            "mothership_hit", self.controllers["audio"].on_mothership_bonus
-        )
-
-        self.event_manager.add_listener(
-            "mothership_hit", self.controllers["score"].on_points_awarded
-        )
-
-        self.event_manager.add_listener(
-            "mothership_exit", self.controllers["audio"].on_mothership_exit
-        )
-
-        self.event_manager.add_listener(
-            "points_awarded", self.controllers["score"].on_points_awarded
-        )
-
-        self.event_manager.add_listener(
-            "invader_hit", self.controllers["invader"].on_invader_hit
-        )
-        self.event_manager.add_listener(
-            "invader_removed", self.controllers["missile"].on_missile_ready
-        )
-
-        self.event_manager.add_listener(
-            "play_delay_complete", self.controllers["player"].on_play_delay_complete
-        )
-
-        self.event_manager.add_listener(
-            "play_delay_complete", self.controllers["missile"].on_missile_ready
-        )
-
-        self.event_manager.add_listener(
-            "play_delay_complete", self.controllers["bomb"].on_play_delay_complete
-        )
-
-        self.event_manager.add_listener(
-            "left_button_pressed", self.controllers["player"].on_move_left
-        )
-        self.event_manager.add_listener(
-            "left_button_released", self.controllers["player"].on_move_left_exit
-        )
-        self.event_manager.add_listener(
-            "right_button_pressed", self.controllers["player"].on_move_right
-        )
-        self.event_manager.add_listener(
-            "right_button_released", self.controllers["player"].on_move_right_exit
-        )
-
-        self.event_manager.add_listener(
-            "fire_button_pressed", self.controllers["missile"].on_fire_pressed
-        )
-
-        self.event_manager.add_listener(
-            "fire_button_pressed", self.controllers["mothership"].on_update_shot_counter
-        )
-
         self.event_manager.add_listener(
             "escape_button_pressed", self.on_escape_button_pressed
         )
+
+        self.setup_game_events()
+
+    def debug_controllers(self):
+        print("Ordered Controllers:")
+        for controller in self.controllers:
+            print(
+                f"{controller.__class__.__name__} - Rendering Order: {controller.rendering_order}"
+            )
+
+    def load_controllers(self, config):
+        # Initialize an empty list to store the imported controllers
+        self.controllers = []
+
+        # Construct the full directory path for controllers
+        controllers_directory = os.path.join("classes", "controllers")
+
+        # Loop through files in the controllers directory
+        for filename in os.listdir(controllers_directory):
+            if filename.endswith("_controller.py"):
+                # Extract the module name without the extension
+                module_name = filename[:-3]
+
+                # Construct the full module path
+                module_path = f"classes.controllers.{module_name}"
+
+                # Import the module dynamically
+                module = importlib.import_module(module_path)
+
+                # Check if the module defines a controller class and add it to the list
+                for name, obj in inspect.getmembers(module):
+                    if (
+                        inspect.isclass(obj)
+                        and issubclass(obj, Controller)
+                        and obj != Controller
+                    ):
+                        # Create an instance of the controller with the config
+                        controller_instance = obj(config)
+                        if not hasattr(controller_instance, "rendering_order"):
+                            controller_instance.rendering_order = 0
+
+                        self.controllers.append(controller_instance)
+
+                self.controllers.sort(key=lambda controller: controller.rendering_order)
+
+    def setup_game_events(self):
+        pass
+        # self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
 
     def on_escape_button_pressed(self):
         pygame.quit()
@@ -185,8 +86,8 @@ class GameController(Controller):
     def on_swarm_complete(self, data):
         self.invader_swarm_complete = True
 
-    def launch_player_missile(self, player_rect):
-        self.player_missile = PlayerMissile(player_rect)
+    # def launch_player_missile(self, player_rect):
+    #     self.player_missile = PlayerMissile(player_rect)
 
     def player_missile_remove(self):
         self.player_missile = None
@@ -202,12 +103,13 @@ class GameController(Controller):
         # create a new game surface each frame
         game_surface = pygame.Surface(self.original_screen_size, pygame.SRCALPHA)
 
-        for controller in self.controllers.values():
-            if hasattr(controller, "update"):
-                canvas_item = controller.update(events, dt)
-                # print(canvas_item)
-            if hasattr(canvas_item, "draw"):
-                canvas_item.draw(game_surface)
+        for controller_instance in self.controllers:
+            # Call the update method if it exists on the controller
+            if hasattr(controller_instance, "update"):
+                canvas_item = controller_instance.update(events, dt)
+                # Check if the controller returns an object with a "draw" method
+                if canvas_item and hasattr(canvas_item, "draw"):
+                    canvas_item.draw(game_surface)
 
         # render the playing surface onto the main window
         self.window_surface.blit(self.scaled_image, self.top_left)

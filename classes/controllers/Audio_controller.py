@@ -1,6 +1,5 @@
 import pygame
-from classes.Controller import Controller
-from classes.mothership.Mothership import Mothership
+from lib.Controller import Controller
 
 pygame.mixer.init()
 
@@ -13,9 +12,16 @@ class AudioController(Controller):
         self.mothership_bonus_sound = pygame.mixer.Sound(
             audio_config["mothership_bonus"]
         )
+        self.event_manager.add_listener(
+            "mothership_spawned", self.on_mothership_spawned
+        )
+        self.event_manager.add_listener("mothership_hit", self.on_mothership_bonus)
+
+        self.event_manager.add_listener("mothership_exit", self.on_mothership_exit)
 
     def on_mothership_spawned(self, data):
-        self.mothership_sound.play(-1)
+        pass
+        # self.mothership_sound.play(-1)
 
     def on_mothership_exit(self, data):
         self.mothership_sound.fadeout(1000)

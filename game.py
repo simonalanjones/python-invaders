@@ -10,6 +10,7 @@ last_time = time.time()
 
 
 game_controller = GameController(config)
+game_controller.load_controllers(config)
 running = True
 
 while running:

@@ -1,5 +1,5 @@
 import pygame
-from classes.Controller import Controller
+from lib.Controller import Controller
 
 
 class UIController(Controller):
@@ -14,7 +14,9 @@ class UIController(Controller):
             (self.canvas_width, self.canvas_height), pygame.SRCALPHA
         )
 
-        self.get_score_callback = lambda: None
+        self.register_callback("get_score_text", self.create_text_surface)
+
+        self.get_score_callback = self.get_callback("get_score")
 
     def draw(self, surface):
         surface.blit(self.canvas, (0, 0))  # blit the canvas onto the game surface

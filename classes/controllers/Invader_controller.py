@@ -1,4 +1,4 @@
-from classes.Controller import Controller
+from lib.Controller import Controller
 from classes.invader.Invader_factory import InvaderFactory
 from classes.invader.Invader_container import InvaderContainer
 
@@ -13,9 +13,20 @@ class InvaderController(Controller):
         self.swarm_complete = False
         self.countdown = 0
 
-        # callbacks defined in Game_controller
-        self.pause_player_missile_callback = None
-        self.resume_player_missile_callback = None
+        self.event_manager.add_listener("invader_hit", self.on_invader_hit)
+
+        self.register_callback(
+            "get_invaders", lambda: self.invader_container.get_invaders()
+        )
+
+        self.register_callback(
+            "get_invader_count", lambda: len(self.invader_container.get_invaders())
+        )
+
+        self.register_callback(
+            "get_lowest_invader_y",
+            lambda: self.invader_container.get_invaders()[0].rect.y,
+        )
 
     def generate_next_invader(self):
         try:
@@ -26,26 +37,11 @@ class InvaderController(Controller):
                 self.is_moving = True
                 self.event_manager.notify("swarm_complete")
 
-    def get_lowest_invader_y(self):
-        return self.invader_container.get_invaders()[0].rect.y
-
-    def get_invader_count(self):
-        return len(self.invader_container.get_invaders())
-
-    def get_invaders(self):
-        return self.invader_container.get_invaders()
-
-    def stop_movement(self):
-        self.is_moving = False
-
-    def start_movement(self):
-        self.is_moving = True
-
     def check_has_landed():
         pass
 
     def on_invader_hit(self, invader):
-        self.stop_movement()
+        self.is_moving = False
         # # pause invaders 1/4 second (60/15)
         self.countdown = 15
         invader.explode()
@@ -53,7 +49,7 @@ class InvaderController(Controller):
 
     def release_non_active(self):
         self.invader_container.remove_inactive()
-        self.start_movement()
+        self.is_moving = True
         self.event_manager.notify("invader_removed")
 
     def update(self, events, dt):

@@ -1,4 +1,4 @@
-from classes.Controller import Controller
+from lib.Controller import Controller
 from classes.player.Player import Player
 
 player_speed = 1
@@ -13,6 +13,18 @@ class PlayerController(Controller):
 
         self.left_key_pressed = False
         self.right_key_pressed = False
+
+        self.register_callback("get_player", self.get_player)
+
+        self.event_manager.add_listener(
+            "play_delay_complete", self.on_play_delay_complete
+        )
+        self.event_manager.add_listener("left_button_pressed", self.on_move_left)
+        self.event_manager.add_listener("left_button_released", self.on_move_left_exit)
+        self.event_manager.add_listener("right_button_pressed", self.on_move_right)
+        self.event_manager.add_listener(
+            "right_button_released", self.on_move_right_exit
+        )
 
     def on_play_delay_complete(self, data):
         self.enabled = True

@@ -1,31 +1,38 @@
-from classes.Controller import Controller
+from lib.Controller import Controller
 from classes.player.Player_missile import PlayerMissile
 import pygame
 
 
 class PlayerMissileController(Controller):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__([])
         self.ready_flag = False
         # there will only ever be one sprite in this group
         self.missile_group = pygame.sprite.Group()
 
+        self.register_callback("get_player_missile", self.get_player_missile)
+
+        self.event_manager.add_listener("invader_removed", self.on_missile_ready)
+        self.event_manager.add_listener("play_delay_complete", self.on_missile_ready)
+        self.event_manager.add_listener("fire_button_pressed", self.on_fire_pressed)
+
         # callbacks for interacting with other components
-        self.get_invaders_callback = lambda: None
-        self.get_shields_callback = lambda: None
-        self.get_player_callback = lambda: None
-        self.mothership_is_exploding = lambda: None
+        self.get_invaders_callback = self.get_callback("get_invaders")
+        # self.get_shields_callback = self.get_callback("")
+        self.get_player_callback = self.get_callback("get_player")
+        self.mothership_is_exploding = self.get_callback("mothership_is_exploding")
 
     def on_missile_ready(self, data):
         self.ready_flag = True
 
     def on_fire_pressed(self, data):
+        player = self.get_player_callback()
         if (
             not self.missile_group
             and self.ready_flag
             and not self.mothership_is_exploding()
         ):
-            self.missile_group.add(PlayerMissile(self.get_player_callback().rect))
+            self.missile_group.add(PlayerMissile(player.rect))
 
     def check_collisions(self):
         if self.missile_group:

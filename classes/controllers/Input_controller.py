@@ -1,6 +1,5 @@
-import pygame
 from pygame.locals import *
-from classes.Controller import Controller
+from lib.Controller import Controller
 
 
 # could be configured with allowed keys
