@@ -4,8 +4,8 @@ import pygame
 
 
 class PlayerMissileController(Controller):
-    def __init__(self, config):
-        super().__init__([])
+    def __init__(self):
+        super().__init__()
         self.ready_flag = False
         # there will only ever be one sprite in this group
         self.missile_group = pygame.sprite.Group()

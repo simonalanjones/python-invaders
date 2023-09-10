@@ -3,7 +3,7 @@ from lib.Controller import Controller
 
 
 class BaselineController(Controller):
-    def __init__(self, config):
+    def __init__(self):
         self.baselineSprite = pygame.sprite.Sprite()
 
         self.baselineImage = pygame.image.load(
@@ -19,16 +19,10 @@ class BaselineController(Controller):
         self.baselineSprite.rect = self.baselineSprite.image.get_rect()
         self.baselineSprite.rect.x = 0
         self.baselineSprite.rect.y = 240
-        # self.collision_check = pygame.sprite.spritecollide
-        self.get_bombs_callback = None
 
     def draw(self, surface):
         # draw the baselineSprite onto the specified surface
         surface.blit(self.baselineSprite.image, self.baselineSprite.rect.topleft)
-
-    def get_base_row(self, bomb_collision):
-        bomb_collision.rect.height - 1
-        # masked_canvas.blit(bomb_collision.image, (bomb_collision.rect.x, bottom_row_y), special_flags=pygame.BLEND_RGBA_MULT)
 
     def update(self, events, dt):
         bomb_callback = self.get_callback("get_bombs")

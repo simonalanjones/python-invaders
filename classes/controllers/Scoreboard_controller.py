@@ -2,8 +2,8 @@ from lib.Controller import Controller
 
 
 class ScoreboardController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
         self.score = 0
         self.update_ui_callback = lambda: None
 

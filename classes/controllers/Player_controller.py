@@ -5,8 +5,8 @@ player_speed = 1
 
 
 class PlayerController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
         self.can_launch_missile = True
         self.enabled = False
         self.player = Player()
@@ -44,9 +44,11 @@ class PlayerController(Controller):
     def update(self, events, dt):
         if self.enabled:
             if self.left_key_pressed:
-                self.player.rect.x -= player_speed * dt
+                # self.player.rect.x -= player_speed * dt
+                self.player.rect.x -= player_speed
             elif self.right_key_pressed:
-                self.player.rect.x += player_speed * dt
+                # self.player.rect.x += player_speed * dt
+                self.player.rect.x += player_speed
             return self.player
 
     def clamp(value, min_value, max_value):

@@ -1,18 +1,21 @@
 import pygame
 from classes.invader.Invader_factory import InvaderFactory
+from classes.config.Invader_config import InvaderConfig
 
 
 class InvaderContainer(pygame.sprite.Group):
-    def __init__(self, config):
+    def __init__(self):
         super().__init__()
+
+        config = InvaderConfig()
         # copy the config values
-        self.invader_direction = config.get("invaders")["horizontal_move"]
-        self.invader_down_direction = config.get("invaders")["vertical_move"]
-        self.screen_left_limit = config.get("invaders")["screen_left_limit"]
-        self.screen_right_limit = config.get("invaders")["screen_right_limit"]
-        self.screen_bottom_limit = config.get("invaders")["screen_bottom_limit"]
+        self.invader_direction = config.get("horizontal_move")
+        self.invader_down_direction = config.get("vertical_move")
+        self.screen_left_limit = config.get("screen_left_limit")
+        self.screen_right_limit = config.get("screen_right_limit")
+        self.screen_bottom_limit = config.get("screen_bottom_limit")
         # when an invader reaches the edge of the screen this flag is set
-        self.invader_move_down = False
+        self.invaders_moving_down = False
         # used to track which invader in the group is next to move
         self.current_invader_index = 0
         # flag used when invaders reach bottom of screen - game over
@@ -28,8 +31,8 @@ class InvaderContainer(pygame.sprite.Group):
     # remember last invader moves differently
     def handle_invader_movement(self):
         invader = self.get_invader_at_current_index()
-        if invader and invader.active == True:
-            if self.invader_move_down == False:
+        if invader and invader.active:
+            if not self.invaders_moving_down:
                 invader.move_across(self.invader_direction)
             else:
                 invader.move_down(self.invader_down_direction)
@@ -47,14 +50,14 @@ class InvaderContainer(pygame.sprite.Group):
             self.update_movement_flags()
 
     def update_movement_flags(self):
-        if self.invader_move_down == True:
-            self.invader_move_down = False
+        if self.invaders_moving_down == True:
+            self.invaders_moving_down = False
 
         # check if any of the invaders have reached screen edge
         if self.has_reached_horizontal_limits():
             # if so switch the direction and set the move_down flag
             self.invader_direction = self.invader_direction * -1
-            self.invader_move_down = True
+            self.invaders_moving_down = True
 
         if self.has_reached_vertical_limit():
             self.invaders_landed = True

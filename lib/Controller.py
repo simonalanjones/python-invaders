@@ -7,9 +7,8 @@ import inspect
 
 
 class Controller:
-    def __init__(self, config):
+    def __init__(self):
         self.event_manager = EventManager.get_instance()
-        self.config = config
 
     # Class-level dictionary to store callbacks
     callbacks = {}

@@ -2,21 +2,17 @@ import pygame, time
 from pygame.locals import *
 
 from classes.Game_controller import GameController
-from classes.Config import Config
 
-config = Config()
 pygame.init()
-last_time = time.time()
 
 
-game_controller = GameController(config)
-game_controller.load_controllers(config)
+game_controller = GameController()
+game_controller.load_controllers()
 running = True
-
+max_fps = 60
+clock = pygame.time.Clock()
 while running:
-    dt = time.time() - last_time
-    dt *= 60
-    last_time = time.time()
+    dt = 0
 
     events = []
     for event in pygame.event.get():
@@ -24,5 +20,9 @@ while running:
             running = False
         else:
             events.append(event)
+
     game_controller.update(events, dt)
+    pygame.display.flip()
+    clock.tick(max_fps)
+
 pygame.quit()

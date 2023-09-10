@@ -4,11 +4,12 @@ from classes.invader.Invader_container import InvaderContainer
 
 
 class InvaderController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
-        invader_factory = InvaderFactory(config)
+    def __init__(self):
+        super().__init__()
+
+        invader_factory = InvaderFactory()
         self.invader_generator = invader_factory.create_invader_swarm()
-        self.invader_container = InvaderContainer(config)
+        self.invader_container = InvaderContainer()
         self.is_moving = False
         self.swarm_complete = False
         self.countdown = 0
@@ -28,6 +29,13 @@ class InvaderController(Controller):
             lambda: self.invader_container.get_invaders()[0].rect.y,
         )
 
+    def on_invader_hit(self, invader):
+        self.is_moving = False
+        # # pause invaders 1/4 second (60/15)
+        self.countdown = 15
+        invader.explode()
+        self.event_manager.notify("points_awarded", invader.points)
+
     def generate_next_invader(self):
         try:
             self.invader_container.add_invader(next(self.invader_generator))
@@ -39,13 +47,6 @@ class InvaderController(Controller):
 
     def check_has_landed():
         pass
-
-    def on_invader_hit(self, invader):
-        self.is_moving = False
-        # # pause invaders 1/4 second (60/15)
-        self.countdown = 15
-        invader.explode()
-        self.event_manager.notify("points_awarded", invader.points)
 
     def release_non_active(self):
         self.invader_container.remove_inactive()

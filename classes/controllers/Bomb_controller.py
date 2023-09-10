@@ -1,4 +1,5 @@
 from lib.Controller import Controller
+
 from classes.bomb.Bomb_factory import BombFactory
 from classes.bomb.Bomb_container import BombContainer
 from classes.invader.Invader import Invader
@@ -7,15 +8,15 @@ import random, pygame, os
 
 
 class BombController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
         self.counter = 0
         self.enabled = False
         self.max_bombs = 1
         self.grace_period = 60
 
         self.bomb_types = ["plunger", "squiggly", "rolling"]
-        self.bomb_factory = BombFactory(config)
+        self.bomb_factory = BombFactory()
         self.bomb_container = BombContainer()
         self.explode_bomb_image = pygame.image.load(
             os.path.join("sprites", "invader_bomb", "bomb_exploding.png")

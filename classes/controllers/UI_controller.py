@@ -1,12 +1,13 @@
 import pygame
 from lib.Controller import Controller
+from classes.config.UI_config import UIConfig
 
 
 class UIController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
-        self.font_config = config.get("font_spritesheet_offsets")
-        self.ui_config = config.get("ui")
+    def __init__(self):
+        super().__init__()
+        self.config = UIConfig()
+        self.font_config = self.config.get("font_spritesheet_offsets")
         self.spritesheet = pygame.image.load("images/font_spritesheet.png")
         self.canvas_width = 224
         self.canvas_height = 256
@@ -15,7 +16,6 @@ class UIController(Controller):
         )
 
         self.register_callback("get_score_text", self.create_text_surface)
-
         self.get_score_callback = self.get_callback("get_score")
 
     def draw(self, surface):
@@ -29,23 +29,23 @@ class UIController(Controller):
 
         # position SCORE text at position in config
         self.canvas.blit(
-            self.create_text_surface(self.ui_config["score_label_text"]),
-            self.ui_config["score_label_position"],
+            self.create_text_surface(self.config.get("score_label_text")),
+            self.config.get("score_label_position"),
         )
 
         # position SCORE value at position in config
         text_surface = self.create_text_surface(score)
-        self.canvas.blit(text_surface, self.ui_config["score_value_position"])
+        self.canvas.blit(text_surface, self.config.get("score_value_position"))
 
         # position HI-SCORE text at position in config
         self.canvas.blit(
-            self.create_text_surface(self.ui_config["hiscore_label_text"]),
-            self.ui_config["hiscore_label_position"],
+            self.create_text_surface(self.config.get("hiscore_label_text")),
+            self.config.get("hiscore_label_position"),
         )
 
         # position HI-SCORE value at position in config
         text_surface = self.create_text_surface("00000")
-        self.canvas.blit(text_surface, self.ui_config["hiscore_value_position"])
+        self.canvas.blit(text_surface, self.config.get("hiscore_value_position"))
 
         return self
 
@@ -55,6 +55,7 @@ class UIController(Controller):
         text_surface = pygame.Surface((surface_width, surface_height), pygame.SRCALPHA)
         text_surface.fill((0, 0, 0, 0))
 
+        # font_spritesheet_offsets = self.font_config.get("font_spritesheet_offsets")
         for idx, letter in enumerate(text):
             if letter in self.font_config:
                 letter_x, letter_y = self.font_config[letter]

@@ -1,17 +1,17 @@
 import pygame
 from lib.Controller import Controller
+from classes.config.Audio_config import AudioConfig
 
 pygame.mixer.init()
 
 
 class AudioController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
-        audio_config = config.get("audio")
-        self.mothership_sound = pygame.mixer.Sound(audio_config["mothership"])
-        self.mothership_bonus_sound = pygame.mixer.Sound(
-            audio_config["mothership_bonus"]
-        )
+    def __init__(self):
+        super().__init__()
+        config = AudioConfig()
+        self.mothership_sound = pygame.mixer.Sound(config.get("mothership"))
+
+        self.mothership_bonus_sound = pygame.mixer.Sound(config.get("mothership_bonus"))
         self.event_manager.add_listener(
             "mothership_spawned", self.on_mothership_spawned
         )

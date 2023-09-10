@@ -4,19 +4,16 @@ import pygame
 
 
 class ShieldController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
+
+        shield_factory = ShieldFactory()
         self.rendering_order = -1
-        self.shield_container = ShieldFactory(config).create_shields()
-        self.explode_bomb_image = pygame.image.load(
-            "sprites/invader_bomb/bomb_exploding.png"
-        )
+        self.shield_container = shield_factory.create_shields()
+
         self.missile_image_2x = pygame.image.load(
             "sprites/player/player-shot-double-height.png"
         )
-
-        # self.get_invaders_callback = self.get_callback("get_invaders")
-        # self.get_missile_callback = self.get_callback("get_player_missile")
 
     def update(self, events, dt):
         self.check_bomb_collisions()

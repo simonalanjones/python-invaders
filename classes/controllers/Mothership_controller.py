@@ -1,12 +1,20 @@
 import pygame
 from lib.Controller import Controller
 from classes.mothership.Mothership import Mothership
+from classes.config.Mothership_config import MothershipConfig
 
 
 class MothershipController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
-        self.mothership_config = config.get("mothership")
+    def __init__(self):
+        super().__init__()
+        self.config = MothershipConfig()
+        self.cycles_until_spawn = self.config.get("cycles_until_spawn")
+        self.spawn_right_position = self.config.get("spawn_right_position")
+        self.spawn_left_position = self.config.get("spawn_left_position")
+        self.qualifying_invader_y_position = self.config.get(
+            "qualifying_invader_y_position"
+        )
+        self.points_table = self.config.get("points_table")
 
         # set-up non-config related variables
         self.cycles_lapsed = 0
@@ -49,7 +57,7 @@ class MothershipController(Controller):
             return False
 
         self.cycles_lapsed += 1
-        if self.cycles_lapsed == self.mothership_config["cycles_until_spawn"]:
+        if self.cycles_lapsed == self.cycles_until_spawn:
             self.spawn()
 
     def check_missile_collision(self):
@@ -81,18 +89,12 @@ class MothershipController(Controller):
         self.shot_counter = (self.shot_counter + 1) % 16
 
     def check_invader_criteria(self):
-        invader_count_callback = self.get_callback("get_invader_count")
-        invader_count = (
-            invader_count_callback()
-        )  # also possible: invader_count =  self.get_callback("get_invader_count")()
-
-        lowest_invader_y_callback = self.get_callback("get_lowest_invader_y")
-        lowest_invader_y = lowest_invader_y_callback()
+        invader_count = self.get_callback("get_invader_count")()
+        lowest_invader_y = self.get_callback("get_lowest_invader_y")()
 
         return (
             invader_count >= 8
-            and lowest_invader_y
-            >= self.mothership_config["qualifying_invader_y_position"]
+            and lowest_invader_y >= self.qualifying_invader_y_position
         )
 
     def get_spawn_direction(self):
@@ -100,19 +102,18 @@ class MothershipController(Controller):
 
     def get_spawn_position(self):
         return (
-            self.mothership_config["spawn_right_position"]
+            self.spawn_right_position
             if self.shot_counter % 2 == 1
-            else self.mothership_config["spawn_left_position"]
+            else self.spawn_left_position
         )
 
     def spawn(self):
         self.event_manager.notify("mothership_spawned")
         self.spawned = True
-        # print("Spawning mothership")
         self.mothership_group.add(
             Mothership(
                 self.get_spawn_position(),
                 self.get_spawn_direction(),
-                self.mothership_config["points_table"],
+                self.points_table,
             )
         )

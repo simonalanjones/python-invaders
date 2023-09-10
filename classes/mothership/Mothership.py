@@ -31,7 +31,10 @@ class Mothership(pygame.sprite.Sprite):
         return self
 
     def update_move(self, dt):
-        self.rect.x += self.direction * dt
+        # self.rect.x += self.direction * dt
+        # print(self.direction * 1 * dt)
+        # self.rect.x += self.direction * 1 * dt
+        self.rect.x += self.direction * 1
 
         if self.has_reached_screen_edge():
             self.kill()

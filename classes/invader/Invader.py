@@ -13,10 +13,6 @@ class Invader(pygame.sprite.Sprite):
         self.active = active
         self.points = points
 
-        self.empty_frame = pygame.image.load(
-            "sprites/invader/invader-empty-frame.png"
-        ).convert_alpha()
-
         self.explode_frame = pygame.image.load(
             "sprites/invader/invader-explode.png"
         ).convert_alpha()
@@ -41,6 +37,9 @@ class Invader(pygame.sprite.Sprite):
                         pixel_color.r, pixel_color.g, pixel_color.b = white
 
                     frame.set_at((x, y), pixel_color)
+
+    def bomb_launch_position(self):
+        return (self.rect.x + 7, self.rect.y + 8)
 
     def explode(self):
         self.image = self.explode_frame

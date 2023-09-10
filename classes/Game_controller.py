@@ -2,20 +2,16 @@ import importlib
 import inspect
 import os
 import pygame
-import sys
 
 from lib.Controller import Controller
+from classes.config.Game_config import GameConfig
 
 
 class GameController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
-        self.bombs_enabled = False
+    def __init__(self):
+        super().__init__()
+        config = GameConfig()
         self.play_delay_count = 120
-        self.player_on_screen = False
-
-        self.player_missile = None
-        # self.invader_swarm_complete = False
         self.top_left = config.get("top_left")
         self.original_screen_size = config.get("original_screen_size")
         self.larger_screen_size = config.get("larger_screen_size")
@@ -25,13 +21,10 @@ class GameController(Controller):
         self.scaled_image = pygame.transform.scale(_bg_image, self.larger_screen_size)
         # add , pygame.FULLSCREEN to run without border
         self.window_surface = pygame.display.set_mode(self.larger_screen_size)
-        self.max_fps = config.get("max_fps")
 
         self.event_manager.add_listener(
             "escape_button_pressed", self.on_escape_button_pressed
         )
-
-        self.setup_game_events()
 
     def debug_controllers(self):
         print("Ordered Controllers:")
@@ -40,7 +33,7 @@ class GameController(Controller):
                 f"{controller.__class__.__name__} - Rendering Order: {controller.rendering_order}"
             )
 
-    def load_controllers(self, config):
+    def load_controllers(self):
         # Initialize an empty list to store the imported controllers
         self.controllers = []
 
@@ -49,7 +42,7 @@ class GameController(Controller):
 
         # Loop through files in the controllers directory
         for filename in os.listdir(controllers_directory):
-            if filename.endswith("_controller.py"):
+            if filename.endswith("_controller.py") and filename != "game_controller.py":
                 # Extract the module name without the extension
                 module_name = filename[:-3]
 
@@ -66,8 +59,8 @@ class GameController(Controller):
                         and issubclass(obj, Controller)
                         and obj != Controller
                     ):
-                        # Create an instance of the controller with the config
-                        controller_instance = obj(config)
+                        # Create an instance of the controller
+                        controller_instance = obj()
                         if not hasattr(controller_instance, "rendering_order"):
                             controller_instance.rendering_order = 0
 
@@ -75,26 +68,12 @@ class GameController(Controller):
 
                 self.controllers.sort(key=lambda controller: controller.rendering_order)
 
-    def setup_game_events(self):
-        pass
-        # self.event_manager.add_listener("swarm_complete", self.on_swarm_complete)
-
-    def on_escape_button_pressed(self):
+    def on_escape_button_pressed(self, data):
         pygame.quit()
-        sys.exit()
-
-    def on_swarm_complete(self, data):
-        self.invader_swarm_complete = True
-
-    # def launch_player_missile(self, player_rect):
-    #     self.player_missile = PlayerMissile(player_rect)
-
-    def player_missile_remove(self):
-        self.player_missile = None
 
     def update(self, events, dt):
-        clock = pygame.time.Clock()
-
+        # sys.exit()
+        # return
         if self.play_delay_count > 0:
             self.play_delay_count -= 1
             if self.play_delay_count <= 0:
@@ -118,6 +97,3 @@ class GameController(Controller):
             pygame.transform.scale(game_surface, self.larger_screen_size),
             self.top_left,
         )
-
-        pygame.display.flip()
-        clock.tick(self.max_fps)

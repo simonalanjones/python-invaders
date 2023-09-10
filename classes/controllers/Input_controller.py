@@ -7,8 +7,8 @@ from lib.Controller import Controller
 # maybe the init method could have a mode which would define the keys it tracks
 # and it could be switched as well as set during config
 class InputController(Controller):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
 
     def update(self, events, dt):
         for event in events:
