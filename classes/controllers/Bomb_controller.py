@@ -68,7 +68,7 @@ class BombController(Controller):
             return self.bomb_factory.create_bomb(invader, bomb_type)
 
     def find_attacking_invader(self, bomb_type):
-        invaders_with_clear_path = self.find_invaders_with_clear_path()
+        invaders_with_clear_path = self.get_callback("get_invaders_with_clear_path")()
         if len(invaders_with_clear_path) > 0:
             if bomb_type == "rolling" and self.get_player_callback:
                 player_rect = self.get_player_callback().get_rect()
@@ -82,34 +82,3 @@ class BombController(Controller):
                 return invaders_with_clear_path[
                     random.randint(0, len(invaders_with_clear_path) - 1)
                 ]
-
-    def find_invaders_with_clear_path(self):
-        invaders_with_clear_path = []
-        invader_callback = self.get_callback("get_invaders")
-        invader_group = invader_callback()
-
-        # find the lowest screen row (initially row 4) of remaining invaders
-        # invaders on this row number won't need a path check
-        max_row = max(invader_group, key=lambda invader: invader.row).row
-
-        for invader in invader_group:
-            clear_path = True
-
-            # if the invader is on the lowest screen row (highest row number) then don't check any further
-            if invader.row == max_row:
-                invaders_with_clear_path.append(invader)
-                continue
-
-            # else begin inner loop:
-            # check all invaders against the invader in the outer loop
-            # if there is an invader with the same column (as the outer loop invader)
-            # but on a lower screen row (higher row number) then it's not a clear path
-            for _invader in invader_group:
-                if _invader.column == invader.column and _invader.row > invader.row:
-                    clear_path = False
-                    break
-
-            if clear_path:
-                invaders_with_clear_path.append(invader)
-
-        return invaders_with_clear_path

@@ -52,4 +52,13 @@ class UIConfig(BaseConfig):
             "?": [1, 51],
             "-": [11, 51],
         },
+        "tints": [
+            {"position": (0, 0), "size": (224, 32), "color": (255, 255, 255)},
+            {"position": (0, 32), "size": (224, 32), "color": (255, 0, 0)},
+            {"position": (0, 64), "size": (224, 120), "color": (255, 255, 255)},
+            {"position": (0, 184), "size": (224, 56), "color": (0, 255, 0)},
+            {"position": (0, 240), "size": (24, 16), "color": (255, 255, 255)},
+            {"position": (24, 240), "size": (112, 16), "color": (0, 255, 0)},
+            {"position": (136, 240), "size": (88, 16), "color": (255, 255, 255)},
+        ],
     }

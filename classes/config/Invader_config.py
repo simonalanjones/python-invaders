@@ -4,7 +4,7 @@ from classes.config.Base_config import BaseConfig
 
 class InvaderConfig(BaseConfig):
     config_values = {
-        "spawn_rows": [120, 144, 160, 168, 168, 168, 176, 176, 176],
+        "spawn_rows": [170, 144, 160, 168, 168, 168, 176, 176, 176],
         "points": [30, 20, 20, 10, 10],
         "cols": 11,
         "rows": 5,

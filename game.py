@@ -1,10 +1,8 @@
 import pygame, time
 from pygame.locals import *
-
 from classes.Game_controller import GameController
 
 pygame.init()
-
 
 game_controller = GameController()
 game_controller.load_controllers()

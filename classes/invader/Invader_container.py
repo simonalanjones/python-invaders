@@ -98,6 +98,35 @@ class InvaderContainer(pygame.sprite.Group):
     def get_invader_count(self) -> int:
         return len(self.sprites())
 
+    def get_invaders_with_clear_path(self):
+        invaders_with_clear_path = []
+        invader_group = self.sprites()
+        # find the lowest screen row (initially row 4) of remaining invaders
+        # invaders on this row number won't need a path check
+        max_row = max(invader_group, key=lambda invader: invader.row).row
+
+        for invader in invader_group:
+            clear_path = True
+
+            # if the invader is on the lowest screen row (highest row number) then don't check any further
+            if invader.row == max_row:
+                invaders_with_clear_path.append(invader)
+                continue
+
+            # else begin inner loop:
+            # check all invaders against the invader in the outer loop
+            # if there is an invader with the same column (as the outer loop invader)
+            # but on a lower screen row (higher row number) then it's not a clear path
+            for _invader in invader_group:
+                if _invader.column == invader.column and _invader.row > invader.row:
+                    clear_path = False
+                    break
+
+            if clear_path:
+                invaders_with_clear_path.append(invader)
+
+        return invaders_with_clear_path
+
     def has_reached_vertical_limit(self) -> bool:
         for invader in self.sprites():
             if invader.rect.y + invader.rect.height >= self.screen_bottom_limit:

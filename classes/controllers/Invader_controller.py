@@ -21,6 +21,11 @@ class InvaderController(Controller):
         )
 
         self.register_callback(
+            "get_invaders_with_clear_path",
+            lambda: self.invader_container.get_invaders_with_clear_path(),
+        )
+
+        self.register_callback(
             "get_invader_count", lambda: len(self.invader_container.get_invaders())
         )
 
