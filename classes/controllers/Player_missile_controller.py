@@ -1,11 +1,13 @@
 from lib.Controller import Controller
-from classes.player.Player_missile import PlayerMissile
+from classes.models.Player_missile import PlayerMissile
+from lib.Sprite_sheet import PlayerSpriteSheet
 import pygame
 
 
 class PlayerMissileController(Controller):
     def __init__(self):
         super().__init__()
+        self.sprite_sheet = PlayerSpriteSheet()
         self.ready_flag = False
         # there will only ever be one sprite in this group
         self.missile_group = pygame.sprite.Group()
@@ -16,9 +18,8 @@ class PlayerMissileController(Controller):
         self.event_manager.add_listener("play_delay_complete", self.on_missile_ready)
         self.event_manager.add_listener("fire_button_pressed", self.on_fire_pressed)
 
-        # callbacks for interacting with other components
-        self.get_invaders_callback = self.get_callback("get_invaders")
-        # self.get_shields_callback = self.get_callback("")
+    def game_ready(self):
+        # self.get_invaders_callback = self.get_callback("get_invaders")
         self.get_player_callback = self.get_callback("get_player")
         self.mothership_is_exploding = self.get_callback("mothership_is_exploding")
 
@@ -32,7 +33,13 @@ class PlayerMissileController(Controller):
             and self.ready_flag
             and not self.mothership_is_exploding()
         ):
-            self.missile_group.add(PlayerMissile(player.rect))
+            params = {
+                "missile_sprite": self.sprite_sheet.get_sprite("missile"),
+                "explode_sprite": self.sprite_sheet.get_sprite("missile_explode"),
+                "player_x_position": player.rect.x,
+                "player_y_position": player.rect.y,
+            }
+            self.missile_group.add(PlayerMissile(params))
 
     def check_collisions(self):
         if self.missile_group:

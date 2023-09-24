@@ -1,6 +1,6 @@
 from lib.Controller import Controller
-from classes.invader.Invader_factory import InvaderFactory
-from classes.invader.Invader_container import InvaderContainer
+from classes.factories.Invader_factory import InvaderFactory
+from classes.containers.Invader_container import InvaderContainer
 
 
 class InvaderController(Controller):
@@ -36,7 +36,7 @@ class InvaderController(Controller):
 
     def on_invader_hit(self, invader):
         self.is_moving = False
-        # # pause invaders 1/4 second (60/15)
+        # pause invaders 1/4 second (60/15)
         self.countdown = 15
         invader.explode()
         self.event_manager.notify("points_awarded", invader.points)

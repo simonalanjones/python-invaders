@@ -1,9 +1,4 @@
-import pygame
 from lib.Event_manager import EventManager
-
-import importlib
-import os
-import inspect
 
 
 class Controller:
@@ -39,4 +34,4 @@ class Controller:
             )
 
 
-pygame.quit()
+# pygame.quit()

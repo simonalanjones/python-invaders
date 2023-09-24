@@ -6,10 +6,6 @@ class BaselineController(Controller):
     def __init__(self):
         self.baselineSprite = pygame.sprite.Sprite()
 
-        self.baselineImage = pygame.image.load(
-            os.path.join("sprites", "invader_bomb", "bomb_exploding_base.png")
-        )
-
         # create the surface for the sprite
         self.baselineSprite.image = pygame.Surface((224, 1), pygame.SRCALPHA)
         # define the green color as (R, G, B) tuple

@@ -1,7 +1,7 @@
-import pygame.sprite
+from lib.Game_sprite import GameSprite
 
 
-class Bomb(pygame.sprite.Sprite):
+class Bomb(GameSprite):
     def __init__(self, x, y, image_frames, explode_frame, bomb_type):
         super().__init__()
         self.image_frames = image_frames
@@ -19,21 +19,6 @@ class Bomb(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
-    def modify_pixel_colors(self):
-        green = (0, 255, 0)
-        white = (255, 255, 255)
-
-        for frame in self.modified_frames:
-            for y in range(frame.get_height()):
-                for x in range(frame.get_width()):
-                    pixel_color = frame.get_at((x, y))
-                    if y + self.rect.y >= 191:
-                        pixel_color.r, pixel_color.g, pixel_color.b = green
-                    else:
-                        pixel_color.r, pixel_color.g, pixel_color.b = white
-
-                    frame.set_at((x, y), pixel_color)
 
     def explode(self):
         self.image = self.explode_frame
@@ -58,14 +43,13 @@ class Bomb(pygame.sprite.Sprite):
 
             if self.rect.y <= 233:
                 self.rect.y += 2 * 1.4  # 3 * 1.4
-                self.modify_pixel_colors()
-            # if self.rect.y > 232:
-            #     self.rect.y = 232
-            #     # self.kill()
+            if self.rect.y > 232:
+                self.rect.y = 232
+                self.kill()
         else:
             self.countdown -= 1
             if self.countdown == 0:
                 self.kill()
 
     def get_sprite_image(self):
-        return self.modified_frames[self.frame_pointer]  # Use the modified copy
+        return self.modify_pixel_colors(self.modified_frames[self.frame_pointer])

@@ -1,7 +1,9 @@
 import pygame
 
+from lib.Game_sprite import GameSprite
 
-class Shield(pygame.sprite.Sprite):
+
+class Shield(GameSprite):
     def __init__(self, x, y, image):
         super().__init__()
 
@@ -12,6 +14,7 @@ class Shield(pygame.sprite.Sprite):
         self.rect.y = y
         # create the mask from the shield image
         # used in collision detection
+        self.modify_pixel_colors(self.image)
         self.mask = pygame.mask.from_surface(self.image)
 
     def missile_damage(self, missile_sprite):
@@ -53,7 +56,6 @@ class Shield(pygame.sprite.Sprite):
             global_position[0] - shield_rect.x,
             global_position[1] - shield_rect.y,
         )
-        # print(local_position)
 
         bomb_type = bomb_sprite.bomb_type
         # if bomb_type == "plunger":
@@ -65,7 +67,7 @@ class Shield(pygame.sprite.Sprite):
 
         modified_shield_surface = self.image.copy()
         modified_shield_surface.blit(
-            bomb_sprite.explode_frame,
+            self.modify_pixel_colors(bomb_sprite.explode_frame),
             # (local_position[0], 0 - y_adjust),
             (local_position[0], local_position[1]),
             special_flags=pygame.BLEND_RGBA_SUB,
@@ -73,7 +75,9 @@ class Shield(pygame.sprite.Sprite):
         self.image = modified_shield_surface
         # update the sprite mask so future collisions
         # use the mask rather than a basic rect
-        self.mask = pygame.mask.from_surface(modified_shield_surface)
+        self.mask = pygame.mask.from_surface(
+            self.modify_pixel_colors(modified_shield_surface)
+        )
 
     def invader_damage(self, invader_sprite):
         shield_rect = self.rect

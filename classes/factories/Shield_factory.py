@@ -1,16 +1,13 @@
 import pygame
-from classes.shield.Shield import Shield
+from classes.models.Shield import Shield
 from classes.config.Shield_config import ShieldConfig
+from lib.Sprite_sheet import ShieldSpriteSheet
 
 
 class ShieldFactory:
     def __init__(self):
-        config = ShieldConfig()
-        image = config.get("image")
-        image_path = config.get_file_path(image)
-
-        self.shield_image = pygame.image.load(config.get_file_path(image_path))
-        self.shield_positions = config.get("positions")
+        self.shield_image = ShieldSpriteSheet().get_sprite("shield_frame")
+        self.shield_positions = ShieldConfig().get("positions")
 
     def create_shields(self):
         sprite_group = pygame.sprite.Group()

@@ -1,5 +1,6 @@
 from lib.Controller import Controller
-from classes.shield.Shield_factory import ShieldFactory
+from classes.factories.Shield_factory import ShieldFactory
+from lib.Sprite_sheet import PlayerSpriteSheet
 import pygame
 
 
@@ -7,13 +8,14 @@ class ShieldController(Controller):
     def __init__(self):
         super().__init__()
 
-        shield_factory = ShieldFactory()
+        # shield_factory = ShieldFactory()
         self.rendering_order = -1
-        self.shield_container = shield_factory.create_shields()
+        self.shield_container = ShieldFactory().create_shields()
 
-        self.missile_image_2x = pygame.image.load(
-            "sprites/player/player-shot-double-height.png"
-        )
+        # self.missile_image_2x = pygame.image.load(
+        #     "sprites/player/player-shot-double-height.png"
+        # )
+        self.missile_image_2x = PlayerSpriteSheet().get_sprite("missile")
 
     def update(self, events, dt):
         self.check_bomb_collisions()

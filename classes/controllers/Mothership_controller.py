@@ -1,13 +1,15 @@
 import pygame
 from lib.Controller import Controller
-from classes.mothership.Mothership import Mothership
+from classes.models.Mothership import Mothership
 from classes.config.Mothership_config import MothershipConfig
+from lib.Sprite_sheet import MothershipSpriteSheet
 
 
 class MothershipController(Controller):
     def __init__(self):
         super().__init__()
         self.config = MothershipConfig()
+        self.sprite_sheet = MothershipSpriteSheet()
         self.cycles_until_spawn = self.config.get("cycles_until_spawn")
         self.spawn_right_position = self.config.get("spawn_right_position")
         self.spawn_left_position = self.config.get("spawn_left_position")
@@ -15,6 +17,8 @@ class MothershipController(Controller):
             "qualifying_invader_y_position"
         )
         self.points_table = self.config.get("points_table")
+        self.mothership_image = self.sprite_sheet.get_sprite("mothership_frame")
+        self.explode_image = self.sprite_sheet.get_sprite("explode_frame")
 
         # set-up non-config related variables
         self.cycles_lapsed = 0
@@ -112,6 +116,8 @@ class MothershipController(Controller):
         self.spawned = True
         self.mothership_group.add(
             Mothership(
+                self.mothership_image,
+                self.explode_image,
                 self.get_spawn_position(),
                 self.get_spawn_direction(),
                 self.points_table,

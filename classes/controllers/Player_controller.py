@@ -1,5 +1,6 @@
 from lib.Controller import Controller
-from classes.player.Player import Player
+from classes.models.Player import Player
+from lib.Sprite_sheet import PlayerSpriteSheet
 
 player_speed = 1
 
@@ -9,7 +10,19 @@ class PlayerController(Controller):
         super().__init__()
         self.can_launch_missile = True
         self.enabled = False
-        self.player = Player()
+        sprite_sheet = PlayerSpriteSheet()
+
+        params = {
+            "player_sprite": sprite_sheet.get_sprite("player"),
+            "player_explode_sprites": [
+                sprite_sheet.get_sprite("player_explode1"),
+                sprite_sheet.get_sprite("player_explode2"),
+            ],
+            "player_x_position": 10,
+            "player_y_position": 218,
+        }
+
+        self.player = Player(params)
 
         self.left_key_pressed = False
         self.right_key_pressed = False

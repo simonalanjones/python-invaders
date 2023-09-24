@@ -1,14 +1,11 @@
-import os
-import pygame
-from classes.invader.Invader import Invader
+from classes.models.Invader import Invader
 from classes.config.Invader_config import InvaderConfig
+from lib.Sprite_sheet import InvaderSpriteSheet
 
 
 class InvaderFactory:
     def __init__(self):
         config = InvaderConfig()
-
-        self.invader_frame_paths = config.get("images")
 
         self.points_array = config.get("points")
         self.spawn_rows = config.get("spawn_rows")
@@ -27,37 +24,33 @@ class InvaderFactory:
         # vertical offset between each invader
         self.y_repeat_offset = config.get("y_repeat_offset")
 
-        # store a reference to the function in the config
-        self.get_file_path = config.get_file_path
+        sprite_sheet = InvaderSpriteSheet()
 
-        invader_frames = self.load_invader_images()
-
+        self.explode_image = sprite_sheet.get_sprite("invader_explode_frame")
         # invaders build/drawn upwards on screen
+
         self.invader_build_array = [
-            invader_frames["small"],
-            invader_frames["mid"],
-            invader_frames["mid"],
-            invader_frames["large"],
-            invader_frames["large"],
+            [
+                sprite_sheet.get_sprite("invader_small_frame1"),
+                sprite_sheet.get_sprite("invader_small_frame2"),
+            ],
+            [
+                sprite_sheet.get_sprite("invader_small_frame1"),
+                sprite_sheet.get_sprite("invader_small_frame2"),
+            ],
+            [
+                sprite_sheet.get_sprite("invader_mid_frame1"),
+                sprite_sheet.get_sprite("invader_mid_frame2"),
+            ],
+            [
+                sprite_sheet.get_sprite("invader_large_frame1"),
+                sprite_sheet.get_sprite("invader_large_frame2"),
+            ],
+            [
+                sprite_sheet.get_sprite("invader_large_frame1"),
+                sprite_sheet.get_sprite("invader_large_frame2"),
+            ],
         ]
-
-    def load_invader_images(self):
-        invader_frames = self.invader_frame_paths
-        invader_images = {}
-
-        for invader_size, frames in invader_frames.items():
-            loaded_frames = []
-            for frame in frames:
-                _image_path = self.get_file_path(frame)
-                try:
-                    image = pygame.image.load(_image_path).convert_alpha()
-                    loaded_frames.append(image)
-                except pygame.error as e:
-                    print(f"Error loading image: {_image_path}")
-
-            invader_images[invader_size] = loaded_frames
-
-        return invader_images
 
     def create_invader_swarm(self):
         spawn_rows_pointer = 0
@@ -88,6 +81,7 @@ class InvaderFactory:
             column,
             row,
             self.invader_build_array[row],
+            self.explode_image,
             index,
             points,
         )

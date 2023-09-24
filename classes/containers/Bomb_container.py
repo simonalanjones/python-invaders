@@ -1,5 +1,5 @@
 import pygame
-from classes.bomb.Bomb import Bomb
+from classes.models.Bomb import Bomb
 
 
 class BombContainer(pygame.sprite.Group):

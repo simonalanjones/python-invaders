@@ -1,13 +1,8 @@
-import os
 from classes.config.Base_config import BaseConfig
 
 
 class MothershipConfig(BaseConfig):
     config_values = {
-        "image_frame": os.path.join("sprites", "mothership", "mothership.png"),
-        "explode_frame": os.path.join(
-            "sprites", "mothership", "mothership-exploding.png"
-        ),
         # "cycles_with_explosion_frame": 60,
         # "cycles_with_bonus_text": 60,
         "cycles_until_spawn": 200,

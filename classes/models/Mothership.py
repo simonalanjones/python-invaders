@@ -1,13 +1,14 @@
-import pygame.sprite
+from lib.Game_sprite import GameSprite
 
 
-class Mothership(pygame.sprite.Sprite):
-    def __init__(self, spawn_position, direction, points_table):
+class Mothership(GameSprite):
+    def __init__(
+        self, mothership_image, explode_image, spawn_position, direction, points_table
+    ):
         super().__init__()
-        self.sprite_path = "sprites/mothership/mothership.png"
-        self.sprite_path_explode = "sprites/mothership/mothership-exploding.png"
         self.points_table = points_table
-        self.image = pygame.image.load(self.sprite_path).convert_alpha()
+        self.image = mothership_image
+        self.explode_image = explode_image
         self.rect = self.image.get_rect(topleft=spawn_position)
         self.direction = direction
         self.shot_counter = 0
@@ -20,7 +21,7 @@ class Mothership(pygame.sprite.Sprite):
         self.rect.x = min(self.rect.x, 208)
         self.active = False
         self.points_image = score_text_surface
-        self.image = pygame.image.load(self.sprite_path_explode).convert_alpha()
+        self.image = self.explode_image
 
     def update(self, shot_counter, dt):
         self.shot_counter = shot_counter
@@ -31,9 +32,6 @@ class Mothership(pygame.sprite.Sprite):
         return self
 
     def update_move(self, dt):
-        # self.rect.x += self.direction * dt
-        # print(self.direction * 1 * dt)
-        # self.rect.x += self.direction * 1 * dt
         self.rect.x += self.direction * 1
 
         if self.has_reached_screen_edge():
@@ -55,20 +53,4 @@ class Mothership(pygame.sprite.Sprite):
         )
 
     def draw(self, surface):
-        self.modify_pixel_colors()
-        surface.blit(self.image, self.rect)
-
-    # in the arcade game a red filter was applied
-    def modify_pixel_colors(self):
-        red = (255, 0, 0)
-        white = (255, 255, 255)
-        for y in range(self.image.get_height()):
-            for x in range(self.image.get_width()):
-                pixel_color = self.image.get_at((x, y))
-                if (
-                    pixel_color[0] == 255
-                    and pixel_color[1] == 255
-                    and pixel_color[2] == 255
-                ):
-                    pixel_color.r, pixel_color.g, pixel_color.b = red
-                    self.image.set_at((x, y), pixel_color)
+        surface.blit(self.modify_pixel_colors(self.image), self.rect)

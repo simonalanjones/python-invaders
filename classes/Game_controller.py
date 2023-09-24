@@ -68,6 +68,14 @@ class GameController(Controller):
 
                 self.controllers.sort(key=lambda controller: controller.rendering_order)
 
+        # when all controllers have loaded, call the game_ready function
+        # which is when it is safe to refer between all controllers
+        for controller_instance in self.controllers:
+            if hasattr(controller_instance, "game_ready") and callable(
+                controller_instance.game_ready
+            ):
+                controller_instance.game_ready()
+
     def on_escape_button_pressed(self, data):
         pygame.quit()
 

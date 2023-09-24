@@ -1,5 +1,4 @@
 import pygame
-from classes.invader.Invader_factory import InvaderFactory
 from classes.config.Invader_config import InvaderConfig
 
 

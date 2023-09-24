@@ -1,21 +1,22 @@
 import pygame
 from lib.Controller import Controller
 from classes.config.UI_config import UIConfig
+from lib.Sprite_sheet import FontSpriteSheet
 
 
 class UIController(Controller):
     def __init__(self):
         super().__init__()
         self.config = UIConfig()
-        self.font_config = self.config.get("font_spritesheet_offsets")
-        self.spritesheet = pygame.image.load("images/font_spritesheet.png")
         self.canvas_width = 224
         self.canvas_height = 256
         self.canvas = pygame.Surface(
             (self.canvas_width, self.canvas_height), pygame.SRCALPHA
         )
-
+        self.sprite_sheet = FontSpriteSheet()
         self.register_callback("get_score_text", self.create_text_surface)
+
+    def game_ready(self):
         self.get_score_callback = self.get_callback("get_score")
 
     def draw(self, surface):
@@ -55,12 +56,8 @@ class UIController(Controller):
         text_surface = pygame.Surface((surface_width, surface_height), pygame.SRCALPHA)
         text_surface.fill((0, 0, 0, 0))
 
-        # font_spritesheet_offsets = self.font_config.get("font_spritesheet_offsets")
         for idx, letter in enumerate(text):
-            if letter in self.font_config:
-                letter_x, letter_y = self.font_config[letter]
-                letter_rect = pygame.Rect(letter_x, letter_y, 8, 8)
-                letter_image = self.spritesheet.subsurface(letter_rect)
-                text_surface.blit(letter_image, (idx * 8, 0))
+            char_image = self.sprite_sheet.get_sprite(letter)
+            text_surface.blit(char_image, (idx * 8, 0))
 
         return text_surface
