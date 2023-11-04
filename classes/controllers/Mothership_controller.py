@@ -19,6 +19,7 @@ class MothershipController(Controller):
         self.points_table = self.config.get("points_table")
         self.mothership_image = self.sprite_sheet.get_sprite("mothership_frame")
         self.explode_image = self.sprite_sheet.get_sprite("explode_frame")
+        self.player_ready = False
 
         # set-up non-config related variables
         self.cycles_lapsed = 0
@@ -26,6 +27,8 @@ class MothershipController(Controller):
         self.shot_counter = 0
 
         self.register_callback("mothership_is_exploding", self.mothership_is_exploding)
+        self.event_manager.add_listener("player_explodes", self.on_player_explodes)
+        self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
 
         self.event_manager.add_listener(
             "fire_button_pressed", self.on_update_shot_counter
@@ -57,7 +60,7 @@ class MothershipController(Controller):
         self.event_manager.notify("mothership_exit")
 
     def update_spawn_logic(self):
-        if not self.check_invader_criteria():
+        if not self.check_invader_criteria() or not self.check_player_criteria():
             return False
 
         self.cycles_lapsed += 1
@@ -89,8 +92,17 @@ class MothershipController(Controller):
         self.cycles_lapsed = 0
         self.spawned = False
 
+    def on_player_explodes(self, data):
+        self.player_ready = False
+
+    def on_player_ready(self, data):
+        self.player_ready = True
+
     def on_update_shot_counter(self, data):
         self.shot_counter = (self.shot_counter + 1) % 16
+
+    def check_player_criteria(self):
+        return self.player_ready
 
     def check_invader_criteria(self):
         invader_count = self.get_callback("get_invader_count")()

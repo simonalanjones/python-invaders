@@ -19,9 +19,8 @@ class BombController(Controller):
         self.bomb_factory = BombFactory()
         self.bomb_container = BombContainer()
 
-        self.event_manager.add_listener(
-            "play_delay_complete", self.on_play_delay_complete
-        )
+        self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
+        self.event_manager.add_listener("player_explodes", self.on_player_explodes)
 
         self.register_callback("get_bombs", lambda: self.bomb_container.get_bombs())
 
@@ -32,7 +31,10 @@ class BombController(Controller):
             "get_invaders_with_clear_path"
         )
 
-    def on_play_delay_complete(self, data):
+    def on_player_explodes(self, data):
+        self.enabled = False
+
+    def on_player_ready(self, data):
         self.enabled = True
 
     def update(self, events, dt):

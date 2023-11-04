@@ -6,11 +6,27 @@ import pygame
 from lib.Controller import Controller
 from classes.config.Game_config import GameConfig
 
+##
+## need a state manager system to co-ordinate the screens
+## state manager can poll the wipe position before changing state
+## state manager can be built into base controller?
+##
+
 
 class GameController(Controller):
+    STARTING_LIVES = 1
+
     def __init__(self):
         super().__init__()
         config = GameConfig()
+
+        # screen wipe settings
+        self.wipe_x = 0  # Initial position of the wipe effect
+        self.wipe_speed = 32  # Adjust this to control the speed of the wipe
+        self.is_wiping = False
+
+        self.lives = self.STARTING_LIVES
+        self.has_extra_life = True
         self.play_delay_count = 120
         self.top_left = config.get("top_left")
         self.original_screen_size = config.get("original_screen_size")
@@ -25,6 +41,31 @@ class GameController(Controller):
         self.event_manager.add_listener(
             "escape_button_pressed", self.on_escape_button_pressed
         )
+        self.event_manager.add_listener(
+            "player_explosion_complete", self.on_player_explosion_complete
+        )
+
+        self.event_manager.add_listener(
+            "extra_life_awarded", self.on_extra_life_awarded
+        )
+
+        self.event_manager.add_listener("game_over_animation_ended", self.on_begin_wipe)
+
+        self.register_callback("get_lives_count", lambda: self.lives)
+        self.register_callback("get_extra_life", lambda: self.has_extra_life)
+
+        # self.event_manager.add_listener("game_over_animation_ended", self.on_restart)
+
+    def on_begin_wipe(self, data):
+        print("starting wipe...")
+        self.is_wiping = True
+
+    def on_restart(self, data):
+        for controller in self.controllers:
+            if hasattr(controller, "game_restart") and callable(
+                controller.game_restart
+            ):
+                controller.game_restart()
 
     def debug_controllers(self):
         print("Ordered Controllers:")
@@ -76,12 +117,23 @@ class GameController(Controller):
             ):
                 controller_instance.game_ready()
 
+    def on_extra_life_awarded(self, data):
+        self.has_extra_life = False
+        self.lives += 1
+
     def on_escape_button_pressed(self, data):
         pygame.quit()
 
+    def on_player_explosion_complete(self, data):
+        self.lives -= 1
+        if self.lives > 0:
+            self.play_delay_count = 120
+        else:
+            self.event_manager.notify("game_ended")
+            # manage game over here
+            return
+
     def update(self, events, dt):
-        # sys.exit()
-        # return
         if self.play_delay_count > 0:
             self.play_delay_count -= 1
             if self.play_delay_count <= 0:
@@ -89,6 +141,13 @@ class GameController(Controller):
 
         # create a new game surface each frame
         game_surface = pygame.Surface(self.original_screen_size, pygame.SRCALPHA)
+        # game_surface.fill((0, 0, 0))
+
+        ## have an intermediate surface that all controllers get blitted to
+        ## have a background surface which gets the background image
+        ## have a foreground surface which gets the wipe blitted
+        ## then blit all of them onto main window
+        ## could just have the wipe render below the score board
 
         for controller_instance in self.controllers:
             # Call the update method if it exists on the controller
@@ -99,9 +158,23 @@ class GameController(Controller):
                     canvas_item.draw(game_surface)
 
         # render the playing surface onto the main window
+        # if not self.is_wiping:
         self.window_surface.blit(self.scaled_image, self.top_left)
+
         # scale the playing surface up to target size on main window
         self.window_surface.blit(
             pygame.transform.scale(game_surface, self.larger_screen_size),
             self.top_left,
         )
+
+        if self.is_wiping:
+            if self.wipe_x <= 224 * 4:
+                self.window_surface.blit(
+                    self.scaled_image, (0, 160), (0, 160, self.wipe_x, 256 * 4)
+                )
+                self.wipe_x += self.wipe_speed
+            else:
+                # possibly have a callback to poll the status instead of event callbacks
+                self.event_manager.notify("wipe_animation_complete")
+                self.is_wiping = False
+                self.wipe_x = 0

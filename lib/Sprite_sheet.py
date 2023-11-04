@@ -80,6 +80,8 @@ class PlayerSpriteSheet(SpriteSheet):
         self.add_sprite("player_explode1", 19, 49, 16, 8)
         self.add_sprite("player_explode2", 37, 49, 16, 8)
         self.add_sprite("missile", 55, 49, 1, 8)
+
+        self.add_sprite("missile_2x", 68, 49, 1, 8)
         self.add_sprite("missile_explode", 58, 49, 8, 8)
 
 

@@ -14,6 +14,8 @@ class ScoreboardController(Controller):
 
     def on_points_awarded(self, points):
         self.score += points
+        if self.score >= 500 and self.callback("get_extra_life"):
+            self.event_manager.notify("extra_life_awarded")
 
     def get_score(self):
         return str(self.score).zfill(5)

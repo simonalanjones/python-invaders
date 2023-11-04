@@ -24,6 +24,10 @@ class Controller:
         return cls.callbacks.get(key)
 
     @classmethod
+    def callback(cls, key):
+        return cls.callbacks.get(key)()
+
+    @classmethod
     def debug_callbacks(cls):
         print("Callbacks:")
         for key, callback in cls.callbacks.items():

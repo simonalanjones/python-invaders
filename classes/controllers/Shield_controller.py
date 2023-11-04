@@ -7,15 +7,12 @@ import pygame
 class ShieldController(Controller):
     def __init__(self):
         super().__init__()
-
-        # shield_factory = ShieldFactory()
         self.rendering_order = -1
         self.shield_container = ShieldFactory().create_shields()
 
-        # self.missile_image_2x = pygame.image.load(
-        #     "sprites/player/player-shot-double-height.png"
-        # )
-        self.missile_image_2x = PlayerSpriteSheet().get_sprite("missile")
+    # place any code here that should run when controllers have loaded
+    def game_ready(self):
+        return
 
     def update(self, events, dt):
         self.check_bomb_collisions()
@@ -24,30 +21,17 @@ class ShieldController(Controller):
         return self.shield_container
 
     def check_missile_collision(self):
-        missile_callback = self.get_callback("get_player_missile")
-        missile = missile_callback()
+        missile = self.callback("get_player_missile")
 
         if missile is not None and missile.active:
-            _missile = pygame.sprite.Sprite()  # Create an instance of the Sprite class
-            _missile.rect = missile.rect.copy()  # Copy the rectangle
-            # because the missile moves up 4 pixels each cycle
-            # we need a sprite 2x height to ensure that sprite collision
-            # doesn't miss any pixels between position jumps
-            _missile.image = self.missile_image_2x  # Copy the image
-            # _missile.rect.y -= 1  # Adjust the copied missile's position
-
             for shield_sprite in self.shield_container:
-                if pygame.sprite.collide_mask(shield_sprite, _missile):
-                    missile.explode(missile.rect.move(-4, -3))
-                    # self.rect.x -= 4
-                    # self.rect.y -= 3
-
-                    shield_sprite.missile_damage(missile)
-                    # self.event_manager.notify("missile_collision", shield_sprite)
+                collision_area = pygame.sprite.collide_mask(shield_sprite, missile)
+                if collision_area is not None:
+                    shield_sprite.missile_collision(collision_area)
+                    missile.explode((-4, 2))
 
     def check_invader_collision(self):
-        invader_callback = self.get_callback("get_invaders")
-        invaders = invader_callback()
+        invaders = self.callback("get_invaders")
         if invaders:
             collisions = pygame.sprite.groupcollide(
                 self.shield_container, invaders, False, False
@@ -57,8 +41,7 @@ class ShieldController(Controller):
                     shield_sprite.invader_damage(invader)
 
     def check_bomb_collisions(self):
-        bomb_callback = self.get_callback("get_bombs")
-        bomb_sprites = bomb_callback()
+        bomb_sprites = self.callback("get_bombs")
 
         if bomb_sprites is not None:
             for shield_sprite in self.shield_container:
@@ -67,7 +50,7 @@ class ShieldController(Controller):
                         shield_sprite, bomb_sprite
                     ):
                         bomb_sprite.explode()
-                        shield_sprite.bomb_damage(bomb_sprite)
+                        shield_sprite.bomb_collision(bomb_sprite)
 
         # if self.get_bombs_callback:
         #     bomb_sprites = self.get_bombs_callback()

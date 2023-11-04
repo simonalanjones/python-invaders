@@ -65,6 +65,7 @@ class Config:
         "audio": {
             "mothership": "sounds/mothership.wav",
             "mothership_bonus": "sounds/mothership_bonus.wav",
+            "player_explodes": "sounds/player_destroyed.wav",
         },
     }
 

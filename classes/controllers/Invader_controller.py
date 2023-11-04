@@ -15,6 +15,8 @@ class InvaderController(Controller):
         self.countdown = 0
 
         self.event_manager.add_listener("invader_hit", self.on_invader_hit)
+        self.event_manager.add_listener("player_explodes", self.on_player_explodes)
+        self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
 
         self.register_callback(
             "get_invaders", lambda: self.invader_container.get_invaders()
@@ -34,12 +36,26 @@ class InvaderController(Controller):
             lambda: self.invader_container.get_invaders()[0].rect.y,
         )
 
+    def game_restart(self):
+        invader_factory = InvaderFactory()
+        self.invader_generator = invader_factory.create_invader_swarm()
+        self.invader_container = InvaderContainer()
+        self.is_moving = False
+        self.swarm_complete = False
+        self.countdown = 0
+
     def on_invader_hit(self, invader):
         self.is_moving = False
         # pause invaders 1/4 second (60/15)
         self.countdown = 15
         invader.explode()
         self.event_manager.notify("points_awarded", invader.points)
+
+    def on_player_explodes(self, data):
+        self.is_moving = False
+
+    def on_player_ready(self, data):
+        self.is_moving = True
 
     def generate_next_invader(self):
         try:

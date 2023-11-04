@@ -1,6 +1,8 @@
+import random
 import pygame
 
 from lib.Game_sprite import GameSprite
+from lib.Sprite_sheet import PlayerSpriteSheet
 
 
 class Shield(GameSprite):
@@ -16,38 +18,28 @@ class Shield(GameSprite):
         # used in collision detection
         self.modify_pixel_colors(self.image)
         self.mask = pygame.mask.from_surface(self.image)
+        self.missile_explode_frame = PlayerSpriteSheet().get_sprite("missile_explode")
 
-    def missile_damage(self, missile_sprite):
-        shield_rect = self.rect
-
-        global_position = missile_sprite.rect.topleft
-        # print(global_position)
-        new_y = global_position[1] - 0
-        new_x = global_position[0] - 0
-
-        # Create a new tuple with the modified y-position
-        global_position = (new_x, new_y)
-
-        # print(global_position)
-        # Convert global position to local position inside the shield
-        local_position = (
-            global_position[0] - shield_rect.x,
-            global_position[1] - shield_rect.y,
-        )
-
+    def missile_collision(self, collision_area):
         modified_shield_surface = self.image.copy()
+
+        collision_rect = pygame.Rect(collision_area[0], collision_area[1], 0, 0)
+        # update collision to align with preferred shield damage area
+        collision_rect = collision_rect.move((-4, -2))
+
         modified_shield_surface.blit(
-            missile_sprite.explode_frame,
-            # (local_position[0], 0 - y_adjust),
-            (local_position[0], local_position[1]),
+            self.missile_explode_frame,
+            collision_rect,
             special_flags=pygame.BLEND_RGBA_SUB,
         )
+
         self.image = modified_shield_surface
-        # update the sprite mask so future collisions
-        # use the mask rather than a basic rect
+        # pygame.time.delay(1000)
+
+        # update the sprite mask for future collisions
         self.mask = pygame.mask.from_surface(modified_shield_surface)
 
-    def bomb_damage(self, bomb_sprite):
+    def bomb_collision(self, bomb_sprite):
         shield_rect = self.rect
         global_position = bomb_sprite.rect.topleft
 
