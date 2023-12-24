@@ -18,7 +18,7 @@ class UIGameOverController(UIController):
         print("on game over")
         self.game_over_text_running = True
 
-    def update(self, events, dt):
+    def update(self, events, state):
         self.canvas.fill((0, 0, 0, 0))
 
         if self.game_over_text_running:

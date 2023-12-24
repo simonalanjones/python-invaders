@@ -21,11 +21,17 @@ class Controller:
 
     @classmethod
     def get_callback(cls, key):
-        return cls.callbacks.get(key)
+        return cls.callbacks.get(key, None)
 
     @classmethod
     def callback(cls, key):
-        return cls.callbacks.get(key)()
+        callback_function = cls.callbacks.get(key)
+        if callback_function is not None:
+            return callback_function()
+        else:
+            # Optionally handle the case where the key is not found
+            # print(f"No callback found for key: {key}")
+            return None
 
     @classmethod
     def debug_callbacks(cls):

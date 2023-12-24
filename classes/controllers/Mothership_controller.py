@@ -43,7 +43,7 @@ class MothershipController(Controller):
         if self.mothership_group.sprites()[0].active == False:
             return True
 
-    def update(self, events, dt):
+    def update(self, events, state):
         if not self.spawned:
             self.update_spawn_logic()
         else:

@@ -61,15 +61,15 @@ class UIController(Controller):
     def draw(self, surface):
         surface.blit(self.canvas, (0, 0))  # blit the canvas onto the game surface
 
-    def update(self, events, dt):
+    def update(self, events, state):
         # clear the canvas between each draw
         self.canvas.fill((0, 0, 0, 0))
 
         # get the score value using the callback to the scoreboard controller
         score = self.callback("get_score")
 
-        lives_canvas = self.draw_lives()
-        self.canvas.blit(lives_canvas, (1, 242))
+        # lives_canvas = self.draw_lives()
+        # self.canvas.blit(lives_canvas, (1, 242))
 
         # position SCORE text at position in config
         self.canvas.blit(

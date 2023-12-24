@@ -7,35 +7,48 @@ class InvaderController(Controller):
     def __init__(self):
         super().__init__()
 
+        self.state = {}
+
         invader_factory = InvaderFactory()
         self.invader_generator = invader_factory.create_invader_swarm()
         self.invader_container = InvaderContainer()
-        self.is_moving = False
         self.swarm_complete = False
         self.countdown = 0
 
-        self.event_manager.add_listener("invader_hit", self.on_invader_hit)
-        self.event_manager.add_listener("player_explodes", self.on_player_explodes)
+        
+
+        # can we do this outside of the controller like in the state
+        # suppose we follow the react method of having access to state setting,
+        #self.event_manager.add_listener("invader_hit", self.on_invader_hit)
+        #self.event_manager.add_listener("player_explodes", self.on_player_explodes)
         self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
 
-        self.register_callback(
-            "get_invaders", lambda: self.invader_container.get_invaders()
-        )
+        # self.register_callback(
+        #     "get_invaders", lambda: self.invader_container.get_invaders()
+        # )
 
-        self.register_callback(
-            "get_invaders_with_clear_path",
-            lambda: self.invader_container.get_invaders_with_clear_path(),
-        )
+        # self.register_callback(
+        #     "get_invaders_with_clear_path",
+        #     lambda: self.invader_container.get_invaders_with_clear_path(),
+        # )
 
-        self.register_callback(
-            "get_invader_count", lambda: len(self.invader_container.get_invaders())
-        )
+        # self.register_callback(
+        #     "get_invader_count", lambda: len(self.invader_container.get_invaders())
+        # )
 
-        self.register_callback(
-            "get_lowest_invader_y",
-            lambda: self.invader_container.get_invaders()[0].rect.y,
-        )
+        # self.register_callback(
+        #     "get_lowest_invader_y",
+        #     lambda: self.invader_container.get_invaders()[0].rect.y,
+        # )
 
+    # maybe this could be in base controller
+    # injects functions that can get state and change state
+    def set_up_state(self, fn_state_change, fn_get_state):
+        pass
+
+
+    # should this be in the state rather than controller
+    # this isn't core functionality and appears to be controlling state of vars
     def game_restart(self):
         invader_factory = InvaderFactory()
         self.invader_generator = invader_factory.create_invader_swarm()
@@ -44,6 +57,12 @@ class InvaderController(Controller):
         self.swarm_complete = False
         self.countdown = 0
 
+    def get_invaders(self):
+        return self.invader_container.get_invaders()
+    # suppose we get vars like coundown from the state object
+    # and vars like is_moving
+    # function get state set state
+    # like in react
     def on_invader_hit(self, invader):
         self.is_moving = False
         # pause invaders 1/4 second (60/15)
@@ -74,7 +93,13 @@ class InvaderController(Controller):
         self.is_moving = True
         self.event_manager.notify("invader_removed")
 
-    def update(self, events, dt):
+    def get_surface(self):
+        return self.invader_container
+
+    # have another function that receives state?
+    def update(self, events, state):
+        self.state = state
+        self.is_moving = state['invaders_moving']
         if not self.swarm_complete:
             self.generate_next_invader()
         else:
@@ -85,5 +110,3 @@ class InvaderController(Controller):
 
             if self.is_moving:
                 self.invader_container.update()
-
-        return self.invader_container

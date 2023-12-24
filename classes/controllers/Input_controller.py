@@ -10,10 +10,14 @@ class InputController(Controller):
     def __init__(self):
         super().__init__()
 
-    def update(self, events, dt):
+    def update(self, events, state):
+        # self.event_manager.notify("escape_button_pressed")
+        # def update(self, events, dt):
         for event in events:
+            # print("event", event)
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
+                    # print("escape press in input controller update")
                     self.event_manager.notify("escape_button_pressed")
 
                 if event.key == K_k:  # 'K' key pressed

@@ -20,7 +20,7 @@ class BaselineController(Controller):
         # draw the baselineSprite onto the specified surface
         surface.blit(self.baselineSprite.image, self.baselineSprite.rect.topleft)
 
-    def update(self, events, dt):
+    def update(self, events, state):
         bomb_callback = self.get_callback("get_bombs")
         bomb_sprites = bomb_callback()
         if len(bomb_sprites) > 0:

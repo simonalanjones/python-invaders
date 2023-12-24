@@ -10,6 +10,8 @@ import random
 class BombController(Controller):
     def __init__(self):
         super().__init__()
+        self.state = {}
+        
         self.counter = 0
         self.enabled = False
         self.max_bombs = 2
@@ -22,14 +24,21 @@ class BombController(Controller):
         self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
         self.event_manager.add_listener("player_explodes", self.on_player_explodes)
 
-        self.register_callback("get_bombs", lambda: self.bomb_container.get_bombs())
+        #self.register_callback("get_bombs", lambda: self.bomb_container.get_bombs())
+
+        self.get_invaders_callback = None
+        self.get_player_callback = None
+        self.get_invaders_clearpath_callback = None
 
     def game_ready(self):
-        self.get_invaders_callback = self.get_callback("get_invaders")
-        self.get_player_callback = self.get_callback("get_player")
-        self.get_invaders_clearpath_callback = self.get_callback(
-            "get_invaders_with_clear_path"
-        )
+        pass
+        #self.get_invaders_callback = self.get_callback("get_invaders")
+        #self.get_player_callback = self.get_callback("get_player")
+        #self.get_invaders_clearpath_callback = self.get_callback(
+        #    "get_invaders_with_clear_path"
+        #)
+    def get_bombs(self):
+        return self.bomb_container.get_bombs()
 
     def on_player_explodes(self, data):
         self.enabled = False
@@ -37,14 +46,24 @@ class BombController(Controller):
     def on_player_ready(self, data):
         self.enabled = True
 
-    def update(self, events, dt):
+    def get_surface(self):
+        return self.bomb_container
+
+    def update(self, events, state):
+        self.state = state
         invaders = self.get_invaders_callback()
-        if len(invaders) > 0 and self.enabled == True:
-            # create a new bomb
-            if len(self.bomb_container.get_bombs()) < self.max_bombs:
-                bomb = self.create_bomb()
-                if isinstance(bomb, Bomb):
-                    self.bomb_container.add(bomb)
+
+        #  if 'fire_button_pressed' in self.state:
+        #     if self.state['fire_button_pressed']:
+
+        if len(invaders) > 0:
+            if 'bombs_enabled' in self.state:
+                if self.state['bombs_enabled'] == True:
+                    # create a new bomb
+                    if len(self.bomb_container.get_bombs()) < self.max_bombs:
+                        bomb = self.create_bomb()
+                        if isinstance(bomb, Bomb):
+                            self.bomb_container.add(bomb)
 
         # Update all existing bomb sprites in this container
         self.counter += 1
@@ -52,7 +71,6 @@ class BombController(Controller):
             self.counter = 0
             for sprite in self.bomb_container:
                 sprite.update()
-        return self.bomb_container
 
     def create_bomb(self):
         def get_next_bomb_type():

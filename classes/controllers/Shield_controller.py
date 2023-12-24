@@ -10,28 +10,39 @@ class ShieldController(Controller):
         self.rendering_order = -1
         self.shield_container = ShieldFactory().create_shields()
 
+        self.get_invaders_callback = None
+        self.get_bombs_callback = None
+        self.get_player_missile_callback = None
+
     # place any code here that should run when controllers have loaded
     def game_ready(self):
         return
 
-    def update(self, events, dt):
-        self.check_bomb_collisions()
-        self.check_invader_collision()
-        self.check_missile_collision()
+    def get_surface(self):
         return self.shield_container
 
-    def check_missile_collision(self):
-        missile = self.callback("get_player_missile")
+    def update(self, events, state):
+        pass
+        # get_invaders_callback = self.get_callback("get_invaders")
+        # print(get_invaders_callback)
+        #self.check_bomb_collisions()
+        #self.check_invader_collision()
+        #self.check_missile_collision()
+        # return self.shield_container
 
-        if missile is not None and missile.active:
-            for shield_sprite in self.shield_container:
-                collision_area = pygame.sprite.collide_mask(shield_sprite, missile)
-                if collision_area is not None:
-                    shield_sprite.missile_collision(collision_area)
-                    missile.explode((-4, 2))
+    def check_missile_collision(self):
+        missile = self.get_player_missile_callback
+        print(self.get_player_missile_callback)
+
+        # if missile is not None and missile.active:
+        #     for shield_sprite in self.shield_container:
+        #         collision_area = pygame.sprite.collide_mask(shield_sprite, missile)
+        #         if collision_area is not None:
+        #             shield_sprite.missile_collision(collision_area)
+        #             missile.explode((-4, 2))
 
     def check_invader_collision(self):
-        invaders = self.callback("get_invaders")
+        invaders = self.get_invaders_callback()
         if invaders:
             collisions = pygame.sprite.groupcollide(
                 self.shield_container, invaders, False, False
@@ -41,9 +52,8 @@ class ShieldController(Controller):
                     shield_sprite.invader_damage(invader)
 
     def check_bomb_collisions(self):
-        bomb_sprites = self.callback("get_bombs")
-
-        if bomb_sprites is not None:
+        bomb_sprites = self.get_bombs_callback()
+        if bomb_sprites:
             for shield_sprite in self.shield_container:
                 for bomb_sprite in bomb_sprites:
                     if bomb_sprite.active and pygame.sprite.collide_mask(
