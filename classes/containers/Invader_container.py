@@ -1,13 +1,12 @@
-import pygame
+from lib.Container import Container
 from classes.config.Invader_config import InvaderConfig
 
 
-class InvaderContainer(pygame.sprite.Group):
+class InvaderContainer(Container):
     def __init__(self):
         super().__init__()
 
         config = InvaderConfig()
-        # copy the config values
         self.invader_direction = config.get("horizontal_move")
         self.invader_down_direction = config.get("vertical_move")
         self.screen_left_limit = config.get("screen_left_limit")
@@ -17,13 +16,51 @@ class InvaderContainer(pygame.sprite.Group):
         self.invaders_moving_down = False
         # used to track which invader in the group is next to move
         self.current_invader_index = 0
-        # flag used when invaders reach bottom of screen - game over
-        self.invaders_landed = False
+        self.invaders_have_landed = False
+
+        self.callback_manager.register_callback(
+            "get_landed_state", lambda: self.invaders_have_landed
+        )
+
+        self.callback_manager.register_callback(
+            "get_invaders_with_clear_path", self.get_invaders_with_clear_path
+        )
+
+        self.callback_manager.register_callback("get_invaders", self.get_invaders)
+
+        self.callback_manager.register_callback(
+            "get_invader_count", self.get_invader_count
+        )
+
+        self.callback_manager.register_callback(
+            "get_lowest_invader_y", self.get_lowest_invader_y
+        )
+
+        self.collision_manager.register_group(
+            name="invaders",
+            function=self.sprites,
+            collision_group="targets",  # invaders/mothership
+        )
+
+        self.collision_manager.register_group(
+            name="invaders_shields",
+            function=self.sprites,
+            collision_group="shield_collisions",
+        )
+
+    def get_lowest_invader_y(self):
+        all_sprites = self.sprites()
+        if len(all_sprites) > 0:
+            return self.sprites()[0].rect.y
+
+    def get_invader_count(self):
+        return len(self.sprites())
 
     def add_invader(self, invader):
         self.add(invader)
 
     def update(self):
+        # we're not checking collisions as player_missile container will do that
         self.handle_invader_movement()
         self.update_current_invader_index()
 
@@ -52,22 +89,20 @@ class InvaderContainer(pygame.sprite.Group):
         if self.invaders_moving_down == True:
             self.invaders_moving_down = False
 
+            if self.has_reached_vertical_limit():
+                self.event_manager.notify("invaders_landed")
+                self.invaders_have_landed = True
+
         # check if any of the invaders have reached screen edge
         if self.has_reached_horizontal_limits():
             # if so switch the direction and set the move_down flag
             self.invader_direction = self.invader_direction * -1
             self.invaders_moving_down = True
 
-        if self.has_reached_vertical_limit():
-            self.invaders_landed = True
-
     def remove_inactive(self):
         for invader in self.get_invaders():
             if invader.active == False:
                 self.remove_invader(invader)
-
-    # def destroy_invader(self, invader):
-    #     invader.explode()
 
     def remove_invader(self, invader):
         invader.active = False
@@ -128,17 +163,18 @@ class InvaderContainer(pygame.sprite.Group):
 
     def has_reached_vertical_limit(self) -> bool:
         for invader in self.sprites():
-            if invader.rect.y + invader.rect.height >= self.screen_bottom_limit:
+            invader_y = invader.rect.y
+            invader_h = invader.rect.height
+            if invader_y + invader_h >= self.screen_bottom_limit:
                 return True
         return False
 
     def has_reached_horizontal_limits(self) -> bool:
         for invader in self.sprites():
+            invader_x = invader.rect.x
             if (
-                invader.rect.x >= self.screen_right_limit and self.invader_direction > 0
-            ) or (
-                invader.rect.x <= self.screen_left_limit and self.invader_direction < 0
-            ):
+                invader_x >= self.screen_right_limit and self.invader_direction > 0
+            ) or (invader_x <= self.screen_left_limit and self.invader_direction < 0):
                 return True
 
         return False

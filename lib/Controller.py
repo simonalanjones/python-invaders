@@ -1,41 +1,14 @@
-from lib.Event_manager import EventManager
+from lib.Event_object import Event_object
 
 
-class Controller:
+class Controller(Event_object):
     def __init__(self):
-        self.event_manager = EventManager.get_instance()
+        super().__init__()
+        # add any extra method or properties needed for all controllers
 
-    # Class-level dictionary to store callbacks
-    callbacks = {}
+    # simple wrapper method that proxies event manager
+    def add_listener(self, event_type, listener):
+        self.event_manager.add_listener(event_type, listener)
 
-    # Class-level dictionary to store callback names (labels)
-    callback_names = {}
-
-    @classmethod
-    def register_callback(cls, key, callback, name=None):
-        cls.callbacks[key] = callback
-
-        # Store the callback name if provided
-        if name:
-            cls.callback_names[key] = name
-
-    @classmethod
-    def get_callback(cls, key):
-        return cls.callbacks.get(key)
-
-    @classmethod
-    def callback(cls, key):
-        return cls.callbacks.get(key)()
-
-    @classmethod
-    def debug_callbacks(cls):
-        print("Callbacks:")
-        for key, callback in cls.callbacks.items():
-            # Get the callback name from the dictionary, or use the key as a fallback
-            name = cls.callback_names.get(key, key)
-            print(
-                f"{name}: {callback.__name__ if hasattr(callback, '__name__') else callback}"
-            )
-
-
-# pygame.quit()
+    def register_callback(self, key, callback, name=None):
+        self.callback_manager.register_callback(key, callback, name)

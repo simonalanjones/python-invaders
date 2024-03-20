@@ -13,28 +13,17 @@ class InvaderController(Controller):
         self.is_moving = False
         self.swarm_complete = False
         self.countdown = 0
+        self.player_is_exploding = False
 
+        self.event_manager.add_listener(
+            "entered_state_game_playing", self.on_game_playing
+        )
         self.event_manager.add_listener("invader_hit", self.on_invader_hit)
         self.event_manager.add_listener("player_explodes", self.on_player_explodes)
-        self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
+        self.event_manager.add_listener("invaders_landed", self.on_pause_movement)
 
-        self.register_callback(
-            "get_invaders", lambda: self.invader_container.get_invaders()
-        )
-
-        self.register_callback(
-            "get_invaders_with_clear_path",
-            lambda: self.invader_container.get_invaders_with_clear_path(),
-        )
-
-        self.register_callback(
-            "get_invader_count", lambda: len(self.invader_container.get_invaders())
-        )
-
-        self.register_callback(
-            "get_lowest_invader_y",
-            lambda: self.invader_container.get_invaders()[0].rect.y,
-        )
+    def get_surface(self):
+        return self.invader_container
 
     def game_restart(self):
         invader_factory = InvaderFactory()
@@ -44,6 +33,14 @@ class InvaderController(Controller):
         self.swarm_complete = False
         self.countdown = 0
 
+    def on_game_playing(self, data):
+        self.player_is_exploding = False
+        self.is_moving = True
+
+    def on_player_explodes(self, data):
+        self.player_is_exploding = True
+        self.is_moving = False
+
     def on_invader_hit(self, invader):
         self.is_moving = False
         # pause invaders 1/4 second (60/15)
@@ -51,7 +48,7 @@ class InvaderController(Controller):
         invader.explode()
         self.event_manager.notify("points_awarded", invader.points)
 
-    def on_player_explodes(self, data):
+    def on_pause_movement(self, data):
         self.is_moving = False
 
     def on_player_ready(self, data):
@@ -66,18 +63,14 @@ class InvaderController(Controller):
                 self.is_moving = True
                 self.event_manager.notify("swarm_complete")
 
-    def check_has_landed():
-        pass
-
     def release_non_active(self):
         self.invader_container.remove_inactive()
-        self.is_moving = True
         self.event_manager.notify("invader_removed")
+        if not self.player_is_exploding:
+            self.is_moving = True
 
-    def update(self, events, dt):
-        if not self.swarm_complete:
-            self.generate_next_invader()
-        else:
+    def update(self, events, dt=0):
+        if self.swarm_complete:
             if self.countdown > 0:
                 self.countdown -= 1
                 if self.countdown <= 0:
@@ -85,5 +78,8 @@ class InvaderController(Controller):
 
             if self.is_moving:
                 self.invader_container.update()
+
+        else:
+            self.generate_next_invader()
 
         return self.invader_container

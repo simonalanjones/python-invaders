@@ -1,9 +1,11 @@
 import pygame
+from lib.Event_object import Event_object
 
 
-class GameSprite(pygame.sprite.Sprite):
+class GameSprite(pygame.sprite.Sprite, Event_object):
     def __init__(self):
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
+        Event_object.__init__(self)
 
     def modify_pixel_colors(self, image):
         if isinstance(image, pygame.Surface):

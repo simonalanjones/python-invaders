@@ -10,7 +10,7 @@ class InputController(Controller):
     def __init__(self):
         super().__init__()
 
-    def update(self, events, dt):
+    def update(self, events, dt=0):
         for event in events:
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
@@ -24,6 +24,8 @@ class InputController(Controller):
                     self.event_manager.notify("fire_button_pressed")
 
             elif event.type == KEYUP:
+                if event.key == K_F12:
+                    self.event_manager.notify("pause_pressed")
                 if event.key == K_k:  # 'K' key released
                     self.event_manager.notify("left_button_released")
                 elif event.key == K_l:  # 'L' key released

@@ -23,18 +23,18 @@ class Mothership(GameSprite):
         self.points_image = score_text_surface
         self.image = self.explode_image
 
-    def update(self, shot_counter, dt):
-        self.shot_counter = shot_counter
+    def update(self):
         if self.active:
-            self.update_move(dt)
+            self.update_move()
         else:
             self.update_exploding()
         return self
 
-    def update_move(self, dt):
+    def update_move(self):
         self.rect.x += self.direction * 1
 
         if self.has_reached_screen_edge():
+            self.event_manager.notify("mothership_exit")
             self.kill()
 
     def update_exploding(self):
@@ -51,6 +51,3 @@ class Mothership(GameSprite):
         return (self.direction == 1 and self.rect.x > 224 - 17) or (
             self.direction == -1 and self.rect.x < 0
         )
-
-    def draw(self, surface):
-        surface.blit(self.modify_pixel_colors(self.image), self.rect)

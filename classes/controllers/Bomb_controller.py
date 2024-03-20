@@ -11,57 +11,88 @@ class BombController(Controller):
     def __init__(self):
         super().__init__()
         self.counter = 0
-        self.enabled = False
-        self.max_bombs = 2
-        self.grace_period = 60
+        self.enabled = True
+        self.reload_time = 60  # reload speed
 
         self.bomb_types = ["plunger", "squiggly", "rolling"]
         self.bomb_factory = BombFactory()
         self.bomb_container = BombContainer()
 
-        self.event_manager.add_listener("play_delay_complete", self.on_player_ready)
-        self.event_manager.add_listener("player_explodes", self.on_player_explodes)
+        self.event_manager.add_listener(
+            "entered_state_game_playing", self.on_player_ready
+        )
+        self.event_manager.add_listener("player_explodes", self.on_stop_event)
+        self.event_manager.add_listener("invaders_landed", self.on_stop_event)
 
-        self.register_callback("get_bombs", lambda: self.bomb_container.get_bombs())
-
-    def game_ready(self):
-        self.get_invaders_callback = self.get_callback("get_invaders")
-        self.get_player_callback = self.get_callback("get_player")
-        self.get_invaders_clearpath_callback = self.get_callback(
-            "get_invaders_with_clear_path"
+        self.event_manager.add_listener(
+            "entered_state_game_playing", self.on_game_playing
         )
 
-    def on_player_explodes(self, data):
+    def get_surface(self):
+        return self.bomb_container
+
+    # we need access to invaders to determine which can drop bombs
+    def get_invaders(self):
+        if self.callback_manager.callback_exists("get_invaders"):
+            return self.callback_manager.callback("get_invaders")
+
+    def get_invaders_with_clear_path(self):
+        if self.callback_manager.callback_exists("get_invaders_with_clear_path"):
+            return self.callback_manager.callback("get_invaders_with_clear_path")
+
+    def get_score(self):
+        if self.callback_manager.callback_exists("get_score"):
+            return self.callback_manager.callback("get_score")
+
+    def get_player(self):
+        if self.callback_manager.callback_exists("get_player"):
+            return self.callback_manager.callback("get_player")
+
+    def get_max_bombs(self):
+        score = self.get_score()
+        if int(score) > 300:
+            return 2
+        else:
+            return 1
+
+    def on_game_playing(self, data):
+        self.reload_time = 120
+
+    def on_stop_event(self, data):
         self.enabled = False
 
     def on_player_ready(self, data):
         self.enabled = True
 
-    def update(self, events, dt):
-        invaders = self.get_invaders_callback()
-        if len(invaders) > 0 and self.enabled == True:
-            # create a new bomb
-            if len(self.bomb_container.get_bombs()) < self.max_bombs:
-                bomb = self.create_bomb()
-                if isinstance(bomb, Bomb):
-                    self.bomb_container.add(bomb)
+    def update(self, events, dt=0):
+        if len(self.bomb_container.get_bombs()) < self.get_max_bombs():
+            if self.reload_time <= 0:
+                self.create_new_bomb()
 
-        # Update all existing bomb sprites in this container
+            else:
+                self.reload_time -= 1
+
         self.counter += 1
-        if self.counter == 3:
+        if self.counter == 2:
             self.counter = 0
-            for sprite in self.bomb_container:
-                sprite.update()
-        return self.bomb_container
+            self.bomb_container.update()
 
+    def create_new_bomb(self):
+        invaders = self.get_invaders()
+        if invaders and self.enabled == True:
+            bomb = self.create_bomb()
+            if isinstance(bomb, Bomb):
+                self.bomb_container.add(bomb)
+                self.reload_time = 30
+
+    # bomb creation involves knowledge of invaders and what's already in the container group
+    # putting that in a factory or the container feels off
     def create_bomb(self):
         def get_next_bomb_type():
             if self.bomb_container.has_rolling_shot():
                 bomb_type = random.choice(self.bomb_types[:2])
             else:
                 bomb_type = random.choice(self.bomb_types)
-
-            bomb_type = self.bomb_types[1]
             return bomb_type
 
         bomb_type = get_next_bomb_type()
@@ -70,16 +101,16 @@ class BombController(Controller):
             return self.bomb_factory.create_bomb(invader, bomb_type)
 
     def find_attacking_invader(self, bomb_type):
-        invaders_with_clear_path = self.get_invaders_clearpath_callback()
+        invaders_with_clear_path = self.get_invaders_with_clear_path()
 
         def is_valid_target(invader):
             return invader.active
 
         def is_rolling_bomb():
-            return bomb_type == "rolling" and self.get_player_callback is not None
+            return bomb_type == "rolling" and self.get_player() is not None
 
         if is_rolling_bomb():
-            player_rect = self.get_player_callback().get_rect()
+            player_rect = self.get_player().get_rect()
             valid_invaders = [
                 invader
                 for invader in invaders_with_clear_path

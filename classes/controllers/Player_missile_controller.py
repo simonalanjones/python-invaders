@@ -1,6 +1,5 @@
 from lib.Controller import Controller
-from classes.models.Player_missile import PlayerMissile
-import pygame
+from classes.containers.Player_missile_container import PlayerMissileContainer
 
 
 class PlayerMissileController(Controller):
@@ -8,53 +7,73 @@ class PlayerMissileController(Controller):
         super().__init__()
         self.ready_flag = False
         self.rendering_order = 1
-        # there will only ever be one sprite in this group
-        self.missile_group = pygame.sprite.Group()
+        self.shot_counter = 0
 
-        self.register_callback("get_player_missile", self.get_player_missile)
+        self.player_missile_container = PlayerMissileContainer()
 
+        self.callback_manager.register_callback(
+            "get_player_missile", self.player_missile_container.find_missile_sprite
+        )
+
+        self.callback_manager.register_callback(
+            "get_player_missile_explosion",
+            self.player_missile_container.find_missile_explosion,
+        )
+
+        self.callback_manager.register_callback(
+            "explode_player_missile",
+            self.player_missile_container.explode_player_missile,
+        )
+
+        self.callback_manager.register_callback(
+            "remove_player_missile",
+            self.player_missile_container.remove_player_missile,
+        )
+
+        self.callback_manager.register_callback(
+            "get_shot_counter", self.get_shot_counter
+        )
+
+        self.event_manager.add_listener("invader_hit", self.on_missile_not_ready)
         self.event_manager.add_listener("invader_removed", self.on_missile_ready)
-        self.event_manager.add_listener("play_delay_complete", self.on_missile_ready)
+        self.event_manager.add_listener(
+            "entered_state_game_playing", self.on_missile_ready
+        )
         self.event_manager.add_listener("fire_button_pressed", self.on_fire_pressed)
+        self.event_manager.add_listener("mothership_exit", self.on_mothership_exit)
 
-    def game_ready(self):
-        return
+    def get_surface(self):
+        return self.player_missile_container
+
+    def get_shot_counter(self):
+        return self.shot_counter
+
+    def on_mothership_exit(self, data):
+        self.shot_counter = 0
+
+    def on_missile_not_ready(self, data):
+        self.ready_flag = False
 
     def on_missile_ready(self, data):
         self.ready_flag = True
 
-    def on_fire_pressed(self, data):
-        if (
-            not self.missile_group
+    def can_player_fire_missile(self):
+        # and not self.callback("mothership_is_exploding")
+        return (
+            self.player_missile_container.find_missile_sprite() == None
             and self.ready_flag
-            and not self.callback("mothership_is_exploding")
-        ):
-            player = self.callback("get_player")
+            and not self.player_missile_container.find_missile_explosion()
+        )
+
+    def on_fire_pressed(self, data):
+        if self.can_player_fire_missile():
+            player = self.callback_manager.callback("get_player")
             params = {
                 "player_x_position": player.rect.x,
                 "player_y_position": player.rect.y,
             }
-            self.missile_group.add(PlayerMissile(params))
+            self.player_missile_container.add_missile_sprite(params)
+            self.shot_counter = (self.shot_counter + 1) % 16
 
-    def check_invader_collisions(self):
-        if self.missile_group:
-            invaders = self.callback("get_invaders")
-            missile = self.get_player_missile()
-            for invader_sprite in invaders:
-                collision_area = pygame.sprite.collide_mask(invader_sprite, missile)
-                if collision_area is not None:
-                    self.event_manager.notify("invader_hit", invader_sprite)
-                    self.ready_flag = False
-                    return True
-
-    def update(self, events, dt):
-        if self.missile_group:
-            if not self.check_invader_collisions():
-                return self.get_player_missile().update()
-            else:
-                self.missile_group.remove(self.get_player_missile())
-
-    # shields need access to player missile
-    def get_player_missile(self):
-        if self.missile_group:
-            return self.missile_group.sprites()[0]
+    def update(self, events, dt=0):
+        self.player_missile_container.update()

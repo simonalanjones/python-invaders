@@ -1,8 +1,6 @@
 import random
 import pygame
-
 from lib.Game_sprite import GameSprite
-from lib.Sprite_sheet import PlayerSpriteSheet
 
 
 class Shield(GameSprite):
@@ -18,25 +16,64 @@ class Shield(GameSprite):
         # used in collision detection
         self.modify_pixel_colors(self.image)
         self.mask = pygame.mask.from_surface(self.image)
-        self.missile_explode_frame = PlayerSpriteSheet().get_sprite("missile_explode")
 
-    def missile_collision(self, collision_area):
-        modified_shield_surface = self.image.copy()
+    def get_local_position(self, global_position, shield_rect):
+        # Converts global position to local position inside the shield
+        local_x = global_position[0] - shield_rect.x
+        local_y = global_position[1] - shield_rect.y
+        return (local_x, local_y)
 
-        collision_rect = pygame.Rect(collision_area[0], collision_area[1], 0, 0)
-        # update collision to align with preferred shield damage area
-        collision_rect = collision_rect.move((-4, -2))
+    def adjust_position(self, position, offset):
+        # Adjusts position by adding offset
+        adjusted_x = position[0] + offset[0]
+        adjusted_y = position[1] + offset[1]
+        return (adjusted_x, adjusted_y)
 
-        modified_shield_surface.blit(
-            self.missile_explode_frame,
-            collision_rect,
+    def apply_explosion_damage(self, modified_surface, explosion_sprite, shield_rect):
+        # Applies explosion damage to the shield
+        explosion_global_position = explosion_sprite.rect.topleft
+        local_explosion_position = self.get_local_position(
+            explosion_global_position, shield_rect
+        )
+        modified_surface.blit(
+            explosion_sprite.image,
+            local_explosion_position,
             special_flags=pygame.BLEND_RGBA_SUB,
         )
 
-        self.image = modified_shield_surface
-        # pygame.time.delay(1000)
+    def apply_missile_damage(self, modified_surface, missile_sprite, shield_rect):
+        # Applies missile damage to the shield
+        missile_global_position = missile_sprite.rect.topleft
+        # Adjust missile position if needed
+        missile_global_position = self.adjust_position(missile_global_position, (0, 2))
+        local_missile_position = self.get_local_position(
+            missile_global_position, shield_rect
+        )
+        modified_surface.blit(
+            missile_sprite.image,
+            local_missile_position,
+            special_flags=pygame.BLEND_RGBA_SUB,
+        )
 
-        # update the sprite mask for future collisions
+    def missile_damage(self, missile_sprite):
+        # Applies damage to the shield surface
+        shield_rect = self.rect
+        modified_shield_surface = self.image.copy()
+
+        # Apply explosion damage
+        explosion_sprite = self.callback_manager.callback(
+            "get_player_missile_explosion"
+        )
+        self.apply_explosion_damage(
+            modified_shield_surface, explosion_sprite, shield_rect
+        )
+
+        # Apply missile damage
+        missile_sprite = self.callback_manager.callback("get_player_missile")
+        self.apply_missile_damage(modified_shield_surface, missile_sprite, shield_rect)
+
+        # Update the shield image and mask
+        self.image = modified_shield_surface
         self.mask = pygame.mask.from_surface(modified_shield_surface)
 
     def bomb_collision(self, bomb_sprite):
@@ -89,35 +126,3 @@ class Shield(GameSprite):
         )
         self.image = modified_shield_surface
         self.mask = pygame.mask.from_surface(modified_shield_surface)
-
-    # def remove_collision(self, sprite):
-    #     if pygame.sprite.collide_mask(self, sprite):
-    #         relative_x = sprite.rect.x - self.rect.x
-    #         relative_y = sprite.rect.y - self.rect.y
-    #         sprite_mask = pygame.mask.from_surface(sprite.image)
-
-    #         # Create a new mask to store the modified mask without modifying the original mask
-    #         modified_mask = self.mask.copy()
-    #         modified_mask.erase(sprite_mask, (relative_x, relative_y))
-
-    #         # Create a new surface using the modified mask and preserve transparency
-    #         self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
-    #         self.image.blit(self.original_image, (0, 0))
-    #         self.mask = modified_mask
-
-    #         self.update_image()  # Update the shield image after removing collision
-
-    # def update_image(self):
-    #     self.image = pygame.Surface(
-    #         self.rect.size, pygame.SRCALPHA
-    #     )  # Create a new transparent surface
-    #     self.image.blit(
-    #         self.original_image, (0, 0)
-    #     )  # Blit the original image onto the new surface
-    #     mask_surface = (
-    #         self.mask.to_surface()
-    #     )  # Create a surface representing the modified mask
-    #     self.image.blit(
-    #         mask_surface, (0, 0)
-    #     )  # Blit the modified mask onto the shield image
-    #     self.image.set_colorkey((0, 0, 0))  # Set black as the transparent color

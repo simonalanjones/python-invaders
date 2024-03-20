@@ -18,9 +18,15 @@ class UIController(Controller):
         self.canvas = pygame.Surface(
             (self.canvas_width, self.canvas_height), pygame.SRCALPHA
         )
+        # self.canvas.fill((128, 128, 128))
         self.sprite_sheet = FontSpriteSheet()
         self.player_sprite_sheet = PlayerSpriteSheet()
-        self.register_callback("get_score_text", self.create_text_surface)
+        self.callback_manager.register_callback(
+            "get_score_text", self.create_text_surface
+        )
+
+    def get_surface(self):
+        return self.canvas
 
     def text_generator(self, text_to_display):
         time_between_chars = 10  # Delay frames between each character
@@ -39,37 +45,39 @@ class UIController(Controller):
             frame_count += 1
 
     def draw_lives(self):
-        lives = self.callback("get_lives_count")
-        player_base = self.player_sprite_sheet.get_sprite("player")
-        # create a canvas the size of players
-        if lives > 0:
-            lives_canvas = pygame.Surface(
-                (17 * lives, self.CANVAS_HEIGHT_PLAYER_LIVES), pygame.SRCALPHA
-            )
-            for i in range(lives - 1):
-                lives_canvas.blit(player_base, (i * 16 + 12, 0))
-        else:
-            lives_canvas = pygame.Surface(
-                (17, self.CANVAS_HEIGHT_PLAYER_LIVES), pygame.SRCALPHA
-            )
+        if "get_lives_count" in self.callback_manager.callbacks:
+            lives = self.callback_manager.callback("get_lives_count")
+            player_base = self.player_sprite_sheet.get_sprite("player")
+            # create a canvas the size of players
+            if lives > 0:
+                lives_canvas = pygame.Surface(
+                    (17 * lives, self.CANVAS_HEIGHT_PLAYER_LIVES), pygame.SRCALPHA
+                )
+                for i in range(lives - 1):
+                    lives_canvas.blit(player_base, (i * 16 + 12, 0))
+            else:
+                lives_canvas = pygame.Surface(
+                    (17, self.CANVAS_HEIGHT_PLAYER_LIVES), pygame.SRCALPHA
+                )
 
-        lives_remaining_canvas = self.create_text_surface(str(lives))
-        lives_canvas.blit(lives_remaining_canvas, (0, 0))
+            lives_remaining_canvas = self.create_text_surface(str(lives))
+            lives_canvas.blit(lives_remaining_canvas, (0, 0))
 
-        return lives_canvas
+            return lives_canvas
 
     def draw(self, surface):
         surface.blit(self.canvas, (0, 0))  # blit the canvas onto the game surface
 
-    def update(self, events, dt):
+    def update(self, events, dt=0):
         # clear the canvas between each draw
         self.canvas.fill((0, 0, 0, 0))
 
         # get the score value using the callback to the scoreboard controller
-        score = self.callback("get_score")
+        score = self.callback_manager.callback("get_score")
 
         lives_canvas = self.draw_lives()
-        self.canvas.blit(lives_canvas, (1, 242))
+        if lives_canvas:
+            self.canvas.blit(lives_canvas, (1, 242))
 
         # position SCORE text at position in config
         self.canvas.blit(
@@ -91,7 +99,7 @@ class UIController(Controller):
         text_surface = self.create_text_surface("00000")
         self.canvas.blit(text_surface, self.config.get("hiscore_value_position"))
 
-        return self
+        return self.canvas
 
     def create_text_surface(self, text):
         surface_width = len(text) * 8

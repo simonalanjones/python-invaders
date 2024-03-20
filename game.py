@@ -1,17 +1,14 @@
-import pygame, time
+import pygame
 from pygame.locals import *
-from classes.Game_controller import GameController
+from lib.System import System
 
 pygame.init()
+system = System.get_instance()
 
-game_controller = GameController()
-game_controller.load_controllers()
 running = True
 max_fps = 60
 clock = pygame.time.Clock()
 while running:
-    dt = 0
-
     events = []
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -19,7 +16,8 @@ while running:
         else:
             events.append(event)
 
-    game_controller.update(events, dt)
+    system.update(events)
+
     pygame.display.flip()
     clock.tick(max_fps)
 
