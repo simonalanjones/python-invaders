@@ -19,14 +19,9 @@ class MothershipContainer(ContainerSingle):
 
         self.collision_manager.register_group(
             name="mothership",
-            function=self.sprite,
-            collision_group="player_missile_mothership",
-            callback=self.on_collision,
-            autorun=True,
+            function=self.sprites,
+            collision_group="targets",
         )
-
-    def on_collision(self, data):
-        print("mothership collision")
 
     def update(self):
         self.sprite.update()

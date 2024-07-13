@@ -26,7 +26,7 @@ class InvaderContainer(Container):
             "get_invaders_with_clear_path", self.get_invaders_with_clear_path
         )
 
-        self.callback_manager.register_callback("get_invaders", self.get_invaders)
+        self.callback_manager.register_callback("get_invaders", self.sprites)
 
         self.callback_manager.register_callback(
             "get_invader_count", self.get_invader_count
@@ -100,7 +100,7 @@ class InvaderContainer(Container):
             self.invaders_moving_down = True
 
     def remove_inactive(self):
-        for invader in self.get_invaders():
+        for invader in self.sprites():
             if invader.active == False:
                 self.remove_invader(invader)
 
@@ -109,7 +109,7 @@ class InvaderContainer(Container):
         invader_index = invader.index
 
         self.remove(invader)
-        for invader in self.get_invaders():
+        for invader in self.sprites():
             if invader.index > invader_index:
                 invader.index -= 1
 
@@ -124,10 +124,6 @@ class InvaderContainer(Container):
         else:
             if self.current_invader_index >= self.get_invader_count():
                 self.current_invader_index = 0
-
-    def get_invaders(self):
-        # return [sprite for sprite in self.sprites() if sprite.active]
-        return self.sprites()
 
     def get_invader_count(self) -> int:
         return len(self.sprites())

@@ -1,4 +1,3 @@
-import pygame
 from lib.Controller import Controller
 from classes.config.Mothership_config import MothershipConfig
 from classes.containers.Mothership_container import MothershipContainer
@@ -66,26 +65,26 @@ class MothershipController(Controller):
             self.mothership_container.spawn()
 
     # set up a sprite group in the container
-    def check_missile_collision(self):
-        return
-        missile_callback = self.get_callback("get_player_missile")
-        missile = missile_callback()
-        mothership = self.mothership_group.sprites()
-        if missile is not None and missile.active:
-            collided = pygame.sprite.spritecollide(missile, mothership, False)
-            if collided:
-                self.mothership_hit()
-                missile.remove()
+    # def check_missile_collision(self):
+    #     return
+    #     missile_callback = self.get_callback("get_player_missile")
+    #     missile = missile_callback()
+    #     mothership = self.mothership_group.sprites()
+    #     if missile is not None and missile.active:
+    #         collided = pygame.sprite.spritecollide(missile, mothership, False)
+    #         if collided:
+    #             self.mothership_hit()
+    #             missile.remove()
 
-    def mothership_hit(self):
-        mothership = self.mothership_group.sprites()[0]
-        points = mothership.calculate_points()
+    # def mothership_hit(self):
+    #     mothership = self.mothership_group.sprites()[0]
+    #     points = mothership.calculate_points()
 
-        text_surface_callback = self.get_callback("get_score_text")
-        points_surface = text_surface_callback(str(points))
+    #     text_surface_callback = self.get_callback("get_score_text")
+    #     points_surface = text_surface_callback(str(points))
 
-        mothership.explode(points_surface)
-        self.event_manager.notify("mothership_hit", points)
+    #     mothership.explode(points_surface)
+    #     self.event_manager.notify("mothership_hit", points)
 
     def reset_spawn_state(self):
         self.cycles_lapsed = 0

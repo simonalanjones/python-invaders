@@ -12,25 +12,6 @@ class PlayerMissileController(Controller):
         self.player_missile_container = PlayerMissileContainer()
 
         self.callback_manager.register_callback(
-            "get_player_missile", self.player_missile_container.find_missile_sprite
-        )
-
-        self.callback_manager.register_callback(
-            "get_player_missile_explosion",
-            self.player_missile_container.find_missile_explosion,
-        )
-
-        self.callback_manager.register_callback(
-            "explode_player_missile",
-            self.player_missile_container.explode_player_missile,
-        )
-
-        self.callback_manager.register_callback(
-            "remove_player_missile",
-            self.player_missile_container.remove_player_missile,
-        )
-
-        self.callback_manager.register_callback(
             "get_shot_counter", self.get_shot_counter
         )
 

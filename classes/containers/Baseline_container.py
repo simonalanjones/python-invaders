@@ -16,5 +16,5 @@ class BaselineContainer(ContainerSingle):
 
     def baseline_collision(self, collision):
         bomb_sprite = collision.extract_sprite_by_class("Bomb")
-        if bomb_sprite != None:
+        if bomb_sprite:
             self.sprite.apply_bomb_damage(bomb_sprite)

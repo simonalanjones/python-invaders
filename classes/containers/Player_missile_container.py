@@ -9,6 +9,22 @@ class PlayerMissileContainer(Container):
         super().__init__()
         self.countdown = 0
 
+        self.callback_manager.register_callback(
+            "get_player_missile", self.find_missile_sprite
+        )
+        self.callback_manager.register_callback(
+            "get_player_missile_explosion",
+            self.find_missile_explosion,
+        )
+        self.callback_manager.register_callback(
+            "explode_player_missile",
+            self.explode_player_missile,
+        )
+        self.callback_manager.register_callback(
+            "remove_player_missile",
+            self.remove_player_missile,
+        )
+
         # register missile sprite sub-group with "shield_collisions"
         self.collision_manager.register_group(
             name="shield_collisions",
@@ -24,23 +40,16 @@ class PlayerMissileContainer(Container):
             callback=self.on_collision,
         )
 
-        # self.collision_manager.register_group(
-        #     name="mothership",
-        #     function=self.find_missile_sprite,
-        #     collision_group="player_missile_mothership",
-        #     autorun=True,
-        # )
-
     # this is a callback which handles the switching of sprites
     def explode_player_missile(self):
         player_missile = self.find_missile_sprite()
-        if player_missile != None:
+        if player_missile:
             self.add_missile_explosion_sprite(player_missile)
 
     # removing of main missile
     def remove_player_missile(self):
         player_missile = self.find_missile_sprite()
-        if player_missile != None:
+        if player_missile:
             player_missile.explode()
 
     def missile_sprite_group(self):
@@ -51,12 +60,17 @@ class PlayerMissileContainer(Container):
     def on_collision(self, collision):
         bomb_sprite = collision.extract_sprite_by_class("Bomb")
         invader_sprite = collision.extract_sprite_by_class("Invader")
+        mothership_sprite = collision.extract_sprite_by_class("Mothership")
 
-        if bomb_sprite != None and self.find_missile_sprite().active:
+        if mothership_sprite and self.find_missile_sprite().active:
+            mothership_sprite.explode()
+            self.empty()
+
+        if bomb_sprite and self.find_missile_sprite().active:
             bomb_sprite.explode()
-            self.find_missile_sprite().explode()
+            self.find_missile_sprite().kill()
 
-        if invader_sprite != None:
+        if invader_sprite:
             self.event_manager.notify("invader_hit", invader_sprite)
             self.empty()  # dont need missile or explosion sprite for this use case
 
@@ -95,12 +109,12 @@ class PlayerMissileContainer(Container):
         self.collision_manager.check_collisions("targets")
 
         missile_explosion = self.find_missile_explosion()
-        if missile_explosion != None:
+        if missile_explosion:
             missile_explosion.update()
 
         # move this into an update method when code is good
         missile_sprite = self.find_missile_sprite()
-        if missile_sprite != None:
+        if missile_sprite:
             missile_sprite.move_up()  # Move the missile vertically upwards
             if missile_sprite.get_y_position() <= 42:
                 missile_sprite.explode()

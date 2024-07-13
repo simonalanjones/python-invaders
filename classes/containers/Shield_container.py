@@ -21,27 +21,20 @@ class ShieldContainer(Container):
         missile_sprite = collision.extract_sprite_by_class("PlayerMissile")
         invader_sprite = collision.extract_sprite_by_class("Invader")
 
+        if not shield_sprite:
+            return
+
         # handle collision between invader and shield
-        if shield_sprite != None and invader_sprite != None:
+        if invader_sprite:
             shield_sprite.invader_damage(invader_sprite)
 
         # handle collision between player missile and shield
-        if shield_sprite != None and missile_sprite != None and missile_sprite.active:
-
-            # missile_sprite.explode()
+        if missile_sprite and missile_sprite.active:
             self.callback_manager.callback("explode_player_missile")
-
-            shield_sprite.missile_damage(
-                missile_sprite
-            )  # need to remove where the missile collided too
-            # self.event_manager.notify("pause_pressed")
-            # return
+            shield_sprite.missile_damage(missile_sprite)
             self.callback_manager.callback("remove_player_missile")
 
         # handle collision between invader bomb and shield
-        if shield_sprite != None and bomb_sprite != None and bomb_sprite.active:
+        if bomb_sprite and bomb_sprite.active:
             bomb_sprite.explode()
             shield_sprite.bomb_collision(bomb_sprite)
-
-    def get_shields(self):
-        return self.sprites()

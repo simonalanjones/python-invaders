@@ -29,11 +29,13 @@ class CallbackManager:
     def callback_exists(cls, key):
         return key in cls.callbacks
 
-    @classmethod
-    def callback(cls, key):
+    def callback(cls, key, optional_param=None):
         callback_function = cls.callbacks.get(key)
         if callback_function is not None:
-            return callback_function()
+            if optional_param is not None:
+                return callback_function(optional_param)
+            else:
+                return callback_function()
         else:
             # Optionally handle the case where the key is not found
             # print(f"No callback found for key: {key}")

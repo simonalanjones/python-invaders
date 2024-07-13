@@ -11,16 +11,13 @@ class Mothership(GameSprite):
         self.explode_image = explode_image
         self.rect = self.image.get_rect(topleft=spawn_position)
         self.direction = direction
-        self.shot_counter = 0
         self.active = True
         self.explode_frame_count = 0
-        self.points_image = None
 
-    def explode(self, score_text_surface):
+    def explode(self, score_text_surface=None):
         # ensure the mothership is not partially shown on screen during explosion
         self.rect.x = min(self.rect.x, 208)
         self.active = False
-        self.points_image = score_text_surface
         self.image = self.explode_image
 
     def update(self):
@@ -39,13 +36,27 @@ class Mothership(GameSprite):
 
     def update_exploding(self):
         self.explode_frame_count += 1
+
+        # change from exploding image to points image after 20 cycles
         if self.explode_frame_count == 20:
-            self.image = self.points_image
+            shots = self.get_shot_counter()
+            points = self.calculate_points(shots)
+            if points > 0:
+                points_text_image = self.callback_manager.callback(
+                    "get_score_text", str(points)
+                )
+                self.image = points_text_image
+
+        # after 92 cycles remove the mothership
         elif self.explode_frame_count == 92:
             self.kill()
 
-    def calculate_points(self):
-        return self.points_table[self.shot_counter]
+    def get_shot_counter(self):
+        if self.callback_manager.callback_exists("get_shot_counter"):
+            return self.callback_manager.callback("get_shot_counter")
+
+    def calculate_points(self, shots):
+        return self.points_table[shots]
 
     def has_reached_screen_edge(self):
         return (self.direction == 1 and self.rect.x > 224 - 17) or (

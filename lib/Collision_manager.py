@@ -34,11 +34,6 @@ class CollisionManager:
         self.grouped_containers = {}
         self.event_manager = EventManager.get_instance()
 
-    # when registering, you could specify whether to use masks or rects and use different collision methods
-    # to allow for precise or fast
-    # perhaps sprites in group could specify their own collision rect and
-    # also have a debug mode on the sprite which shows it's collision rect if used
-    # https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.groupcollide
     def register_group(
         self, name, function, collision_group=None, callback=None, autorun=False
     ):
@@ -47,8 +42,6 @@ class CollisionManager:
         self.grouped_containers[collision_group].append(
             (name, function, callback, autorun)
         )
-
-    ############################### new code ########################
 
     def run_autorun_groups(self):
         for collision_group, containers in self.grouped_containers.items():
@@ -122,67 +115,6 @@ class CollisionManager:
         if callback2 is not None:
             callback2(Collision(sprite1, sprite2, collision_area))
 
-    ##################### end new code ###################
-
-    # original check_collisions
-    def ___check_collisions(self, collision_group):
-        containers_to_check = []
-        for group in self.grouped_containers.values():
-            for name, function, callback, autorun in group:
-                containers_to_check.append((name, function, callback))
-
-        # Use itertools.combinations to get unique pairs
-        unique_pairs = list(itertools.combinations(containers_to_check, 2))
-        # print(f"Number of unique pairs to check: {len(unique_pairs)}")
-
-        for (container1_name, container1_function, callback1), (
-            container2_name,
-            container2_function,
-            callback2,
-        ) in unique_pairs:
-            container1_group = container1_function()
-            container2_group = container2_function()
-
-            # Check both groups are not empty and are iterable
-            if (
-                container1_group
-                and container2_group
-                and hasattr(container1_group, "__iter__")
-                and hasattr(container2_group, "__iter__")
-            ):
-                # print(
-                #     f"Checking collisions between {container1_name} and {container2_name}"
-                # )
-                # print(
-                #     f"Number of sprites in {container1_name}: {len(container1_group)}"
-                # )
-                # print(
-                #     f"Number of sprites in {container2_name}: {len(container2_group)}"
-                # )
-                # Iterate through sprites in both containers
-                for sprite1 in container1_group:
-                    for sprite2 in container2_group:
-                        # Perform collision detection using sprite masks
-                        collision_area = pygame.sprite.collide_mask(sprite1, sprite2)
-                        if collision_area is not None:
-                            # print("Collision detected!")
-                            # event notification
-                            self.event_manager.notify(
-                                f"{sprite1.__class__.__name__}_{sprite2.__class__.__name__}_collision",
-                                [sprite1, sprite2, collision_area],
-                            )
-                            # fire callback if specified
-                            if callback1 is not None:
-                                callback1(Collision(sprite1, sprite2, collision_area))
-                            if callback2 is not None:
-                                callback2(Collision(sprite1, sprite2, collision_area))
-
-                            # default action is to return a Collision object
-                            return Collision(sprite1, sprite2, collision_area)
-
-        # Return None if no collision is detected
-        return None
-
     def debug(self):
         print("===== CollisionManager Debug =====")
         for collision_group, containers in self.grouped_containers.items():
@@ -201,21 +133,3 @@ class CollisionManager:
                         "  - Number of Sprites: Unable to determine (function not callable)"
                     )
         print("=================================")
-
-    def __debug(self):
-        print("===== CollisionManager Debug =====")
-        for collision_group, containers in self.grouped_containers.items():
-            print(f"Collision Group: {collision_group}")
-            for name, function in containers:
-                print(f"  - Container: {name}")
-                if callable(function):
-                    num_sprites = len(function())
-                    print(f"  - Number of Sprites: {num_sprites}")
-                else:
-                    print(
-                        "  - Number of Sprites: Unable to determine (function not callable)"
-                    )
-
-                # num_sprites = len(function())
-                # print(f"  - Number of Sprites: {num_sprites}")
-            print("=================================")

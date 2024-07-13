@@ -98,7 +98,6 @@ class UIController(Controller):
         # position HI-SCORE value at position in config
         text_surface = self.create_text_surface("00000")
         self.canvas.blit(text_surface, self.config.get("hiscore_value_position"))
-
         return self.canvas
 
     def create_text_surface(self, text):
